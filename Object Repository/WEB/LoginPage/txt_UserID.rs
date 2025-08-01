@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>txt_UserID</name>
+   <tag></tag>
+   <elementGuidId>5ca57b7d-5399-44be-9e37-89661f09f0eb</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>BASIC</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value></value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>BASIC</selectorMethod>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>false</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>txt_UserID</name>
+      <type>Main</type>
+      <value>//input[@type='text']</value>
+      <webElementGuid>d4628e09-96d3-4400-87ac-25acb8faf9ec</webElementGuid>
+   </webElementProperties>
+</WebElementEntity>
