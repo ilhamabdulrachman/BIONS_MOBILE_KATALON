@@ -40,9 +40,9 @@ Mobile.tap(findTestObject('Portofolio/btn_portofolio'), 1)
 Mobile.tap(findTestObject('Portofolio/Skip_porto'), 1)
 
 //Mobile.takeAreaScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', FailureHandling.STOP_ON_FAILURE)
-Mobile.checkElement(findTestObject('Portofolio/saham_1'), 1)
+Mobile.tap(findTestObject('Portofolio/saham_1'), 1)
 
 Mobile.tap(findTestObject('Portofolio/skip_dashboard'), 1)
 
-Mobile.tap(findTestObject('Portofolio/buy_porto'), 1)
+Mobile.tap(findTestObject('Portofolio/BTN_SELL'), 1)
 
