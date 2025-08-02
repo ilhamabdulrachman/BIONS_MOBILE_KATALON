@@ -21,6 +21,8 @@ Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
+Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
+
 Mobile.setText(findTestObject('TEST_LOGIN/user_id'), 'REDACTED_USERID', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'REDACTED_PIN22', 0)
