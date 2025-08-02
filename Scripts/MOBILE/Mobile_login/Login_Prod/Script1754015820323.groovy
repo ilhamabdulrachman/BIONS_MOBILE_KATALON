@@ -21,23 +21,35 @@ Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
+Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
+
 Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '23AA50456', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw111', 0)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
+
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
+
 Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 
