@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', false)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -39,12 +39,12 @@ Mobile.tap(findTestObject('Portofolio/btn_portofolio'), 1)
 
 Mobile.tap(findTestObject('Portofolio/Skip_porto'), 1)
 
-//Mobile.takeAreaScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', 
+    FailureHandling.STOP_ON_FAILURE)
+
 Mobile.checkElement(findTestObject('Portofolio/saham_1'), 1)
 
 Mobile.tap(findTestObject('Portofolio/skip_dashboard'), 1)
 
 Mobile.tap(findTestObject('Portofolio/view_dashboard'), 1)
-
-//Mobile.tap(findTestObject('Portofolio/full_screen_stockdashboard'), 1)
 

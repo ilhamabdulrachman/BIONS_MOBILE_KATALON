@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', false)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -27,7 +27,7 @@ Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw111', 0)
 
-Mobile.tap(findTestObject('TEST_LOGIN/btn_'), )
+Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
 
 //Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
@@ -38,5 +38,6 @@ Mobile.tap(findTestObject('Portofolio/btn_portofolio'), 1)
 
 Mobile.tap(findTestObject('Portofolio/Skip_porto'), 1)
 
-//Mobile.takeAreaScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofoliolist.PNG', FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', 
+    FailureHandling.STOP_ON_FAILURE)
 

@@ -31,9 +31,13 @@ Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
 
-//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
+Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-//Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 1)
+Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.scrollToText('BionsUpdate', FailureHandling.STOP_ON_FAILURE)
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.swipe(500, 1500, 500, 500)
 

@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', false)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -27,22 +27,20 @@ Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw111', 0)
 
-Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
+Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
-
+//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 2)
+Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 1)
 
-Mobile.tap(findTestObject('Portofolio/btn_portofolio'), 1)
+Mobile.tap(findTestObject('Transaksi/button_buy_sell'), 1)
 
-Mobile.tap(findTestObject('Portofolio/Skip_porto'), 1)
+Mobile.tap(findTestObject('Transaksi/Skip_basic_order'), 2)
 
-//Mobile.takeAreaScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', FailureHandling.STOP_ON_FAILURE)
-Mobile.tap(findTestObject('Portofolio/saham_1'), 1)
+Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
 
-Mobile.tap(findTestObject('Portofolio/skip_dashboard'), 1)
+Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 1)
 
-Mobile.tap(findTestObject('Portofolio/BTN_SELL'), 1)
+Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
 
