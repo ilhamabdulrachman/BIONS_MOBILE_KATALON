@@ -58,3 +58,5 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.tap(findTestObject('Transaksi/Skip_quick_tour_orderlist'), 1)
 
+Mobile.closeApplication()
+
