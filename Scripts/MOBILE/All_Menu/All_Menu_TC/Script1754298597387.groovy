@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', false)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -29,19 +29,27 @@ Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'REDACTED_PIN22', 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'REDACTED_PASSWORD11', 0)
 
-Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
-//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
+Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 1)
 
-Mobile.tap(findTestObject('Portofolio/btn_portofolio'), 1)
+Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Portofolio/Skip_porto'), 1)
+Mobile.tap(findTestObject('More_Menu/More_Menu'), 1)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Portofolio_list.PNG', 
-    FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenu.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenu1.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenu2.PNG')
 
 Mobile.closeApplication()
 

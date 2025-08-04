@@ -50,3 +50,5 @@ Mobile.tap(findTestObject('Portofolio/skip_dashboard'), 1)
 
 Mobile.tap(findTestObject('Portofolio/view_dashboard'), 1)
 
+Mobile.closeApplication()
+
