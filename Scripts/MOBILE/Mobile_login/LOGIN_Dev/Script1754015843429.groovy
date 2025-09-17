@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 4.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -25,9 +25,9 @@ Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
 Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '1B029', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'x', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Password2'), 'q', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'x12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 

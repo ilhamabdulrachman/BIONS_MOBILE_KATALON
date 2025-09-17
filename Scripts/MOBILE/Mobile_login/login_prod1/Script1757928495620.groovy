@@ -16,49 +16,89 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
+import com.utilities.TcpClient
 
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 5.apk', true)
+
+//def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
+//NetworkChecker.verifyInternetConnection()
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
+//NetworkChecker.verifyInternetConnection()
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '23AA50456', 0)
+Mobile.setText(findTestObject('login_v191/USER ID'), '23AA50456', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
+Mobile.setText(findTestObject('login_v191/paswword'), 'kittiw222', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw333', 0)
+Mobile.setText(findTestObject('login_v191/pin'), 'kittiw333', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
+
+TcpClient client = new TcpClient()
+client.connect("trade.bions.id", 62229)   // FEED_SERVER_1
+
+// 📤 Buat JSON request
+String requestMsg = """
+{
+   "action": "subscribe",
+   "channel": "marketdata",
+   "symbols": ["BBCA", "BBRI"]
+}
+"""
+
+// 📤 Kirim ke server
+String response = client.sendMessage(requestMsg)
+
+// 📩 Cek response
+if (response != null) {
+    KeywordUtil.markPassed("Socket Response: " + response)
+} else {
+    KeywordUtil.markWarning("⚠️ Tidak ada response dari server")
+}
+
+// 🔌 Tutup koneksi
+client.close()
+
+
+
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
+
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
+//NetworkChecker.verifyInternetConnection()
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 

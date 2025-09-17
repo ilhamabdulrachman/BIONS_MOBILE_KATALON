@@ -16,18 +16,20 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
+import com.utilities.TcpClient
+import com.kms.katalon.core.util.KeywordUtil
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 4.apk', false)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', false)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '1B029', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '23AA50456', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'x', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'x12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw333', 0)
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
 
@@ -51,6 +53,24 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Basicorder3.PNG')
+
+def client = new TcpClient()
+client.connect("trade.bions.id", 62229)
+
+// Kirim login
+client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
+
+// Listen 5 detik untuk capture response login
+client.listen(5)
+
+// Kirim subscribe order
+client.sendMessage('{ "action":"subscribe", "channel":"order", "user":"23AA50456" }')
+
+// Listen 10 detik untuk capture response order
+client.listen(10)
+
+// Tutup koneksi
+client.close()
 
 Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
 

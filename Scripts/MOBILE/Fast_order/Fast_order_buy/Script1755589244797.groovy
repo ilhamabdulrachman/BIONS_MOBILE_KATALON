@@ -17,23 +17,21 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 
-
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 5.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 4.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '23AA50456', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '1B029', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'kittiw222', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'x', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'kittiw333', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'x12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
-
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
@@ -41,26 +39,36 @@ Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
 Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
+Mobile.tap(findTestObject('Fast_Order_Buy/Klik_more'), 1)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder1.PNG')
+
+Mobile.tap(findTestObject('Fast_Order_Buy/Klik_fastorder'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder2.PNG')
+
+//Mobile.tap(findTestObject('Fast_Order_Buy/Select_saham'), 0)
+Mobile.tap(findTestObject('Fast_Order_Buy/Lot_'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder3.PNG')
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.tap(findTestObject('Fast_Order_Buy/Check_box'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder4.PNG')
+
+Mobile.tap(findTestObject('Fast_Order_Buy/Confirm_submit'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder5.PNG')
+
 Mobile.swipe(500, 1500, 500, 500)
 
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder6.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder7.PNG')
 
 Mobile.closeApplication()
 
