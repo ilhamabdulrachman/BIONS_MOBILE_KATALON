@@ -16,24 +16,44 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
+import com.utilities.TcpClient as TcpClient
+import com.kms.katalon.core.util.KeywordUtil
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 2.apk', true)
+//def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
+//NetworkChecker.verifyInternetConnection()
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
+//NetworkChecker.verifyInternetConnection()
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/user_id'), 'REDACTED_USERID', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'REDACTED_PIN22', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN22', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'REDACTED_PASSWORD11', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN33', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
+//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+TcpClient client = new TcpClient()
+
+client.connect('REDACTED_PROD_HOST', 62229 // FEED_SERVER_1
+    )
+
+// Kirim login
+client.sendMessage('{ "action":"login", "user":"REDACTED_USERID", "password":"REDACTED_PIN22" }')
+
+// Listen 5 detik untuk capture response login
+client.listen(5)
+
+// 🔌 Tutup koneksi
+client.close()
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 

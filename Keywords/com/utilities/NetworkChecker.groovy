@@ -78,8 +78,8 @@ class NetworkChecker {
 	def static verifyInternetConnection() {
 		println('Memeriksa koneksi internet...')
 
-		//def adbCommand = 'adb shell ping -c 1 8.8.8.8'
-		def adbCommand = 'adb shell ping -c 1 REDACTED_INTERNAL_IP'
+		def adbCommand = 'adb shell ping -c 1 8.8.8.8'
+		//def adbCommand = 'adb shell ping -c 1 REDACTED_INTERNAL_IP'
 
 		try {
 			def process = Runtime.getRuntime().exec(adbCommand)

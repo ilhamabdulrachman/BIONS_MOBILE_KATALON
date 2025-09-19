@@ -17,22 +17,12 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 import com.utilities.TcpClient as TcpClient
-import com.kms.katalon.core.util.KeywordUtil
+import com.kms.katalon.core.util.KeywordUtil as KeywordUtil
 import java.time.ZonedDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.Instant
 import java.time.Duration
-import com.utilities.TradingHours
-
-
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
-if (isMarketOpen) {
-	KeywordUtil.logInfo("Bursa sedang buka. Melanjutkan pengujian login...")
-} else {
-	// Jika bursa tutup, hentikan tes
-	KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
-}
 
 //def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
 //NetworkChecker.verifyInternetConnection()
@@ -51,22 +41,17 @@ Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
-Instant start = Instant.now()
-
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
-
-Instant end = Instant.now()
-
-long seconds = Duration.between(start, end).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${seconds} detik")
 
 def now = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"))
 def fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
 KeywordUtil.logInfo("Login successful at " + now.format(fmt))
+
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 TcpClient client = new TcpClient()
 
@@ -86,22 +71,64 @@ Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
+Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.tap(findTestObject('SBN/Tap_Fixed_Income'), 1)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba1.PNG')
+
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.tap(findTestObject('EBA_BUY/INDAH0105'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba2.PNG')
+
+Mobile.tap(findTestObject('EBA_BUY/BUTTON_BUY'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba3.PNG')
+
+Mobile.setText(findTestObject('EBA_BUY/AMOUNT'), '1000000', 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba4.PNG')
+
+Mobile.tap(findTestObject('EBA_BUY/Buy_Eba'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba5.PNG')
+
+Mobile.tap(findTestObject('EBA_BUY/Tick_buy_eba'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba6.PNG')
+
+Mobile.tap(findTestObject('EBA_BUY/confirm_submit'), 0)
+
+KeywordUtil.logInfo("Order Sent at " + now.format(fmt))
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba7.PNG')
+
+Instant start = Instant.now()
+
+Mobile.tap(findTestObject('EBA_BUY/view_order_lisf'), 0)
+
+Instant end = Instant.now()
+long seconds = Duration.between(start, end).toMillis() / 1000
+
+KeywordUtil.markPassed("⏱️ Order List terbuka dalam ${seconds} detik")
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba8.PNG')
+
+Mobile.tap(findTestObject('EBA_BUY/skip_tour_eba'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba9.PNG')
+
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba10.PNG')
 
 Mobile.closeApplication()
 
