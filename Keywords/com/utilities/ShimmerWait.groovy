@@ -56,6 +56,21 @@ class ShimmerWait {
 	 * @param to Katalon test object
 	 */
 	@Keyword
+	def static void waitForShimmerToDisappear(TestObject targetElement, int timeout) {
+		KeywordUtil.logInfo("Menunggu elemen target: '${targetElement.getObjectId()}' muncul setelah shimmer.")
+		
+		try {
+			// Gunakan waitForElementPresent untuk menunggu elemen target
+			// Anda dapat memilih antara Mobile.waitForElementPresent atau Mobile.waitForElementVisible
+			// tergantung pada kebutuhan
+			MobileBuiltInKeywords.waitForElementPresent(targetElement, timeout)
+			KeywordUtil.logInfo("Elemen target berhasil ditemukan. Shimmer telah hilang.")
+			KeywordUtil.markPassed("Shimmer menghilang seperti yang diharapkan.")
+		} catch (Exception e) {
+			KeywordUtil.markFailed("Shimmer tidak menghilang dalam ${timeout} detik atau elemen target tidak muncul. Error: " + e.getMessage())
+		}
+	}
+	@Keyword
 	def clickElement(TestObject to) {
 		try {
 			WebElement element = WebUiBuiltInKeywords.findWebElement(to);
@@ -143,6 +158,8 @@ class ShimmerWait {
 	 * @param password password
 	 * @return the original request object with basic authorization header field added
 	 */
+	
+	
 	@Keyword
 	def addBasicAuthorizationProperty(TestObject request, String username, String password) {
 		if (request instanceof RequestObject) {

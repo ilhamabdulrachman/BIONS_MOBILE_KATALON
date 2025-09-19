@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.time.Instant
 import java.time.Duration
 import com.utilities.TradingHours
+import com.utilities.ShimmerWait as ShimmerWait
 
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -34,7 +35,7 @@ if (isMarketOpen) {
 	KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
 }
 
-//def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
+def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
 
@@ -86,6 +87,7 @@ Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 Mobile.swipe(500, 1500, 500, 500)
 
