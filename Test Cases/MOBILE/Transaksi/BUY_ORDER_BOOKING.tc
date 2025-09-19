@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>BUY_ORDER_BOOKING</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>7615296c-99f7-425d-a0d1-da119a78f96d</testCaseGuid>
+</TestCaseEntity>

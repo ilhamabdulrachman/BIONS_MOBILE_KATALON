@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>SELL_EBA</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>ef1ac032-1eb7-40c4-87a4-11b42f0d58a8</testCaseGuid>
+</TestCaseEntity>
