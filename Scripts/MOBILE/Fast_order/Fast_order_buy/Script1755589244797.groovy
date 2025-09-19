@@ -16,24 +16,71 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
+import com.utilities.TcpClient as TcpClient
+import com.kms.katalon.core.util.KeywordUtil
+import com.utilities.TradingHours
+import java.time.ZonedDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.Instant
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 4.apk', true)
+
+boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+if (isMarketOpen) {
+	KeywordUtil.logInfo("Bursa sedang buka. Melanjutkan pengujian login...")
+} else {
+	// Jika bursa tutup, hentikan tes
+	KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
+}
+
+//def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
+//NetworkChecker.verifyInternetConnection()
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
+//NetworkChecker.verifyInternetConnection()
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/user_id'), '1B029', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pasword'), 'x', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw222', 0)
 
-Mobile.setText(findTestObject('TEST_LOGIN/pin'), 'x12345', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw333', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
+Instant start = Instant.now()
+
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
+Instant end = Instant.now()
+
+long seconds = Duration.between(start, end).toMillis() / 1000
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${seconds} detik")
+
+def now = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"))
+def fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+KeywordUtil.logInfo("Login successful at " + now.format(fmt))
+
+//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+TcpClient client = new TcpClient()
+
+client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+    )
+
+// Kirim login
+client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
+
+// Listen 5 detik untuk capture response login
+client.listen(5)
+
+// 🔌 Tutup koneksi
+client.close()
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
