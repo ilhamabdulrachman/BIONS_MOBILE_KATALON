@@ -25,6 +25,9 @@ import java.time.Instant
 import java.time.Duration
 import com.utilities.TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
+import groovy.json.JsonSlurper
+
+
 
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -91,17 +94,25 @@ ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 Mobile.swipe(500, 1500, 500, 500)
 
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 

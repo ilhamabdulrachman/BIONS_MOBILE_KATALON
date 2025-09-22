@@ -102,10 +102,14 @@ Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
