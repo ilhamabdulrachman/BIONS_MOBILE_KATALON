@@ -1,4 +1,4 @@
-package com.utilities
+package com.api.utils
 import static com.kms.katalon.core.checkpoint.CheckpointFactory.findCheckpoint
 import static com.kms.katalon.core.testcase.TestCaseFactory.findTestCase
 import static com.kms.katalon.core.testdata.TestDataFactory.findTestData
@@ -36,10 +36,12 @@ import com.kms.katalon.core.mobile.helper.MobileElementCommonHelper
 import com.kms.katalon.core.util.KeywordUtil
 
 import com.kms.katalon.core.webui.exception.WebElementNotFoundException
+import groovy.json.JsonSlurper
+import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 
 
 
-class ShimmerWait {
+class ApiKeywords {
 	/**
 	 * Refresh browser
 	 */
@@ -55,21 +57,6 @@ class ShimmerWait {
 	 * Click element
 	 * @param to Katalon test object
 	 */
-	@Keyword
-	def static void waitForShimmerToDisappear(TestObject targetElement, int timeout) {
-		KeywordUtil.logInfo("Menunggu elemen target: '${targetElement.getObjectId()}' muncul setelah shimmer.")
-
-		try {
-			// Gunakan waitForElementPresent untuk menunggu elemen target
-			// Anda dapat memilih antara Mobile.waitForElementPresent atau Mobile.waitForElementVisible
-			// tergantung pada kebutuhan
-			MobileBuiltInKeywords.waitForElementPresent(targetElement, timeout)
-			KeywordUtil.logInfo("Elemen target berhasil ditemukan. Shimmer telah hilang.")
-			KeywordUtil.markPassed("Shimmer menghilang seperti yang diharapkan.")
-		} catch (Exception e) {
-			KeywordUtil.markFailed("Shimmer tidak menghilang dalam ${timeout} detik atau elemen target tidak muncul. Error: " + e.getMessage())
-		}
-	}
 	@Keyword
 	def clickElement(TestObject to) {
 		try {
@@ -158,8 +145,6 @@ class ShimmerWait {
 	 * @param password password
 	 * @return the original request object with basic authorization header field added
 	 */
-
-
 	@Keyword
 	def addBasicAuthorizationProperty(TestObject request, String username, String password) {
 		if (request instanceof RequestObject) {
@@ -189,5 +174,36 @@ class ShimmerWait {
 			KeywordUtil.markFailed(request.getObjectId() + "is not a RequestObject")
 		}
 		return request
+	}
+	
+	@Keyword
+	def static boolean sendLoginRequest(RequestObject requestObject) {
+		KeywordUtil.logInfo("Mengirim permintaan login API...")
+		
+		try {
+			ResponseObject response = WS.sendRequest(requestObject)
+			
+			if (response.getStatusCode() == 200) {
+				KeywordUtil.logInfo("Permintaan berhasil. Status Code: 200")
+				
+				// Parse respons JSON untuk verifikasi
+				def jsonResponse = new JsonSlurper().parseText(response.getResponseText())
+				
+				// Verifikasi status dari respons JSON
+				if (jsonResponse.status == true) {
+					KeywordUtil.markPassed("Login API berhasil. Status respons: true")
+					return true
+				} else {
+					KeywordUtil.markFailed("Login API gagal. Pesan respons: " + jsonResponse.message)
+					return false
+				}
+			} else {
+				KeywordUtil.markFailed("Permintaan API gagal. Status Code: " + response.getStatusCode())
+				return false
+			}
+		} catch (Exception e) {
+			KeywordUtil.markFailed("Terjadi kesalahan saat memanggil API. Detail: " + e.getMessage())
+			return false
+		}
 	}
 }

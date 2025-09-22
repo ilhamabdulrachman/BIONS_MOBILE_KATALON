@@ -22,6 +22,8 @@ public class TradingHours {
 			KeywordUtil.logInfo("Bursa tutup pada akhir pekan.")
 			return false
 		}
+		
+		
 
 		// Aturan khusus untuk hari Jumat
 		if (currentDay == DayOfWeek.FRIDAY) {
@@ -66,4 +68,30 @@ public class TradingHours {
 		KeywordUtil.logInfo("Bursa sedang tutup.")
 		return false
 	}
+	@Keyword
+	def static boolean isSbnSecondaryAllowed() {
+		def jakartaZone = ZoneId.of('Asia/Jakarta')
+		def currentTime = ZonedDateTime.now(jakartaZone)
+		def currentDay = currentTime.getDayOfWeek()
+		def localTime = currentTime.toLocalTime()
+
+		// Tutup Sabtu & Minggu
+		if (currentDay == DayOfWeek.SATURDAY || currentDay == DayOfWeek.SUNDAY) {
+			KeywordUtil.logInfo("SBN Secondary tidak tersedia (akhir pekan).")
+			return false
+		}
+
+		// Sesi I (Senin-Jumat, 09:00–11:30)
+		def sesi1Start = LocalTime.of(9, 0)
+		def sesi1End   = LocalTime.of(11, 30)
+
+		if (!localTime.isBefore(sesi1Start) && localTime.isBefore(sesi1End)) {
+			KeywordUtil.logInfo("✅ SBN Secondary diperbolehkan (Sesi I).")
+			return true
+		}
+
+		KeywordUtil.logInfo("❌ SBN Secondary hanya bisa di Sesi I (09:00–11:30).")
+		return false
+	}
+
 }
