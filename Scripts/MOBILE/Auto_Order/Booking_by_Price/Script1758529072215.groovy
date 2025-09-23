@@ -30,12 +30,15 @@ import groovy.json.JsonSlurper as JsonSlurper
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...') // Jika bursa tutup, hentikan tes
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Jika bursa tutup, hentikan tes
+        )
 } else {
     KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
 }
 
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
+
+def Form_Auto_Order = findTestObject('Auto_order/Form_Auto_Order')
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -90,13 +93,60 @@ Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(Form_Auto_Order, 3)
 
-Mobile.tap(findTestObject('More_Menu/More_Menu'), 1)
+Mobile.tap(findTestObject('Auto_order/more'), 1)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenu.PNG')
+Mobile.tap(findTestObject('Auto_order/Menu_Auto_Order'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
 
 Mobile.tap(findTestObject('Auto_order/tick_auto_order'), 0)
 
 Mobile.tap(findTestObject('Auto_order/I accept'), 0)
+
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+
+Mobile.tap(findTestObject('Auto_order/Change_stock'), 0)
+
+Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'APLN', 0)
+
+Mobile.tap(findTestObject('Auto_order/tapsaham'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Select_Condition'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Booking_By_Price'), 0)
+
+Mobile.setText(findTestObject('Auto_order/Input_Price_'), '133', 0)
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+//Mobile.tap(findTestObject('Auto_order/buy_sendorder'), 0)
+Mobile.swipe(500, 1500, 500, 500)
+
+//Mobile.setText(findTestObject('Auto_order/Input_Price'), '133', 0)
+
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.setText(findTestObject('Auto_order/Lot'), '3', 0)
+
+Mobile.tap(findTestObject('Auto_order/Send_As_Order'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Confirm_And_Submit'), 0)
+
+KeywordUtil.logInfo('Order Sent at ' + now.format(fmt))
+
+Mobile.tap(findTestObject('Auto_order/View_Order_List'), 0)
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.closeApplication()
 
