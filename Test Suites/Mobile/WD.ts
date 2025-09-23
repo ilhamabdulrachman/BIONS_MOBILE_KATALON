@@ -12,28 +12,28 @@
    <rerunImmediately>false</rerunImmediately>
    <testSuiteGuid>d066ebba-cde4-4fde-af63-f5080fdfecf0</testSuiteGuid>
    <testCaseLink>
-      <guid>14c949f1-a278-4722-811f-7c5348087444</guid>
+      <guid>0fdf27f4-9df8-4afe-9fec-5a21e542a713</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
       <testCaseId>Test Cases/MOBILE/WD/Wd_syariah</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
    <testCaseLink>
-      <guid>2c294550-6a8e-4a2c-8e08-879f22ac6d78</guid>
+      <guid>fc97513b-fe18-4a03-916d-b9929f1c56ac</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
       <testCaseId>Test Cases/MOBILE/WD/Wd_Day_Trade</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
    <testCaseLink>
-      <guid>41e6fe49-b5e2-4b75-b820-e2d5ae540691</guid>
+      <guid>d4414b83-7207-437e-9c20-cab802fb5d5a</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
       <testCaseId>Test Cases/MOBILE/WD/Wd_Reguler</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
    <testCaseLink>
-      <guid>bdb409f5-0412-4989-a4b0-3d83a4998ba4</guid>
+      <guid>e0d7f934-b94b-4876-bcbd-48c68eba9692</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
       <testCaseId>Test Cases/MOBILE/WD/Wd_Margin</testCaseId>
