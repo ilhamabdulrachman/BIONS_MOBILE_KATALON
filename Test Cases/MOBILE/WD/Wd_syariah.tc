@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCaseEntity>
    <description></description>
-   <name>Wd_</name>
+   <name>Wd_syariah</name>
    <tag></tag>
    <comment></comment>
    <recordOption>OTHER</recordOption>
-   <testCaseGuid>5b4516c4-c14a-4dc1-98b7-086d0f6b3b21</testCaseGuid>
+   <testCaseGuid>477d1dac-99c5-45de-9c57-bb670a15a3b1</testCaseGuid>
 </TestCaseEntity>
