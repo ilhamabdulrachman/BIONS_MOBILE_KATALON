@@ -93,27 +93,57 @@ ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 
 Mobile.tap(findTestObject('Profile/Profile'), 0)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/PROFILE22.PNG')
+
 Mobile.tap(findTestObject('Profile/Finish_'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Profile23.PNG')
 
 Mobile.tap(findTestObject('Profile/wd'), 0)
 
-Mobile.setText(findTestObject('Profile/Enter_Amount'), '500000', 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM1.PNG')
+
+Mobile.tap(findTestObject('Profile/Account_Type'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM2.PNG')
+
+Mobile.tap(findTestObject('Profile/Margin'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM3.PNG')
+
+Mobile.tap(findTestObject('Profile/Trnsfer_Method'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM4.PNG')
+
+Mobile.tap(findTestObject('Profile/RTGS'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM5.PNG')
+
+Mobile.setText(findTestObject('Profile/Enter_Amount'), '2500000', 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM6.PNG')
 
 Mobile.hideKeyboard()
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.tap(findTestObject('Profile/enter_Pin'), 0)
 
 Mobile.setText(findTestObject('Profile/enter_Pin'), 'q12345', 0)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM7.PNG')
+
 Mobile.hideKeyboard()
 
+Mobile.tap(findTestObject('Profile/Continue'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM8.PNG')
+
 Mobile.tap(findTestObject('Mobile/TICK_wd'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM9.PNG')
 
 start1 = Instant.now()
 
 Mobile.tap(findTestObject('Profile/confirm_submit'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM10.PNG')
 
 end1 = Instant.now()
 
@@ -121,13 +151,19 @@ seconds = (Duration.between(start1, end1).toMillis() / 1000)
 
 KeywordUtil.logInfo("⏱️ Waktu Saat withdrawl: $seconds detik")
 
-Mobile.tap(findTestObject('Profile/View_history'), 0)
-
 KeywordUtil.logInfo('Withdrawl successful at ' + now.format(fmt))
+
+Mobile.tap(findTestObject('Profile/View_History'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM11.PNG')
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM12.PNG')
+
 Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/WDM13.PNG')
 
 Mobile.closeApplication()
 
