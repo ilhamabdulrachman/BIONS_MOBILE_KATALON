@@ -23,32 +23,41 @@ import java.time.ZoneId as ZoneId
 import java.time.format.DateTimeFormatter as DateTimeFormatter
 import java.time.Instant as Instant
 import java.time.Duration as Duration
-import com.utilities.NetworkChecker as NetworkChecker
 import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
+import groovy.json.JsonSlurper as JsonSlurper
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+
 if (isMarketOpen) {
-	KeywordUtil.logInfo("Bursa sedang buka. Melanjutkan pengujian login...")
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-// Jika bursa tutup, hentikan tes
-KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
+
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
+def Form_Auto_Order = findTestObject('Auto_order/form auto order')
+
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw222', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw333', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -62,68 +71,86 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
+//NetworkChecker.verifyInternetConnection()
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+TcpClient client = new TcpClient()
+
+client.connect('192.168.19.61', 62229 // FEED_SERVER_1
+    )
+
+// Kirim login
+client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+
+// Listen 5 detik untuk capture response login
+client.listen(5)
+
+// 🔌 Tutup koneksi
+client.close()
+
 Instant end = Instant.now()
 
 long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
-
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
-
-TcpClient client = new TcpClient()
-
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-    )
-
-// 📤 Buat JSON request
-String requestMsg = '\n{\n   "action": "subscribe",\n   "channel": "marketdata",\n   "symbols": ["BBCA", "BBRI"]\n}\n'
-
-// 📤 Kirim ke server
-String response = client.sendMessage(requestMsg)
-
-// 📩 Cek response
-if (response != null) {
-    KeywordUtil.markPassed('Socket Response: ' + response)
-} else {
-    KeywordUtil.markWarning('⚠️ Tidak ada response dari server')
-}
-
-// 🔌 Tutup koneksi
-client.close()
-
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
+Mobile.tap(findTestObject('Auto_order/more'), 0)
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder.PNG')
 
-Mobile.swipe(500, 1500, 500, 500)
-
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
+Mobile.tap(findTestObject('Auto_order/Menu_Auto_Order'), 1)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
+Mobile.tap(findTestObject('Auto_order/tick_auto_order'), 0)
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
+Mobile.tap(findTestObject('Auto_order/I accept'), 0)
+
+ShimmerWait.waitForShimmerToDisappear(Form_Auto_Order, 3)
+
+Mobile.tap(findTestObject('Auto_order/Change_stock'), 0)
+
+Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'APLN', 0)
+
+Mobile.tap(findTestObject('Auto_order/tapsaham'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Select_Condition'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Booking_By_Price'), 0)
+
+Mobile.setText(findTestObject('Auto_order/Input_Price_'), '160', 0)
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+//Mobile.tap(findTestObject('Auto_order/buy_sendorder'), 0)
+Mobile.swipe(500, 1500, 500, 500)
+
+//Mobile.setText(findTestObject('Auto_order/Input_Price'), '133', 0)
+Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.setText(findTestObject('Auto_order/Lot'), '', 0)
+
+Mobile.setText(findTestObject('Auto_order/Lot'), '3', 0)
+
+Mobile.tap(findTestObject('Auto_order/Send_As_Order'), 0)
+
+Mobile.tap(findTestObject('Auto_order/Confirm_And_Submit'), 0)
+
+KeywordUtil.logInfo('Order Sent at ' + now.format(fmt))
+
+Mobile.tap(findTestObject('Auto_order/View_Order_List'), 0)
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
-
 Mobile.swipe(500, 1500, 500, 500)
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
+Mobile.swipe(500, 1500, 500, 500)
 
 Mobile.closeApplication()
 

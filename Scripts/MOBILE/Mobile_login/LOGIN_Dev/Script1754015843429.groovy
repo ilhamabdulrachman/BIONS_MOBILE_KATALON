@@ -17,30 +17,34 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 import com.utilities.TcpClient as TcpClient
-import com.kms.katalon.core.util.KeywordUtil
-import java.time.ZonedDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.Instant
-import java.time.Duration
-import com.utilities.TradingHours
+import com.kms.katalon.core.util.KeywordUtil as KeywordUtil
+import java.time.ZonedDateTime as ZonedDateTime
+import java.time.ZoneId as ZoneId
+import java.time.format.DateTimeFormatter as DateTimeFormatter
+import java.time.Instant as Instant
+import java.time.Duration as Duration
+import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
-import groovy.json.JsonSlurper
-
-
-
+import groovy.json.JsonSlurper as JsonSlurper
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+
 if (isMarketOpen) {
-	KeywordUtil.logInfo("Bursa sedang buka. Melanjutkan pengujian login...")
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-	// Jika bursa tutup, hentikan tes
-	KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
 
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
+
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
+Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', false)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -59,16 +63,12 @@ Instant start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
-Instant end = Instant.now()
+def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
 
-long seconds = Duration.between(start, end).toMillis() / 1000
+def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${seconds} detik")
+KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
-def now = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"))
-def fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-
-KeywordUtil.logInfo("Login successful at " + now.format(fmt))
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
@@ -86,33 +86,39 @@ client.listen(5)
 // 🔌 Tutup koneksi
 client.close()
 
+Instant end = Instant.now()
+
+long seconds = Duration.between(start, end).toMillis() / 1000
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
+
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 

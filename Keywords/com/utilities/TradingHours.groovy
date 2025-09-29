@@ -39,11 +39,11 @@ public class TradingHours {
 
 			// Jam Sesi II (14:00 - 16:00)
 			def fridaySession2Start = LocalTime.of(14, 0)
-			def fridaySession2End = LocalTime.of(16, 0)
-			
-			// Jam Sesi Pre-closing (14:50 - 15:00)
-			def fridayPreClosingStart = LocalTime.of(14, 50)
-			def fridayPreClosingEnd = LocalTime.of(15, 0)
+			def fridaySession2End = LocalTime.of(15, 49)
+
+			// Jam Sesi Pre-closing (15:50 - 16:00)
+			def fridayPreClosingStart = LocalTime.of(15, 50)
+			def fridayPreClosingEnd = LocalTime.of(16, 0)
 
 			if ((localTime.isAfter(fridaySession1Start) || localTime.equals(fridaySession1Start)) && localTime.isBefore(fridaySession1End)) {
 				KeywordUtil.logInfo("Bursa sedang buka pada Sesi I (Jumat).")
@@ -56,14 +56,14 @@ public class TradingHours {
 			}
 		} else {
 			// Aturan untuk Senin - Kamis
-			// Jam Sesi I (09:00 - 12:00)
+			// Jam Sesi I (09:00 - 11:59)
 			def session1Start = LocalTime.of(9, 0)
-			def session1End = LocalTime.of(12, 0)
+			def session1End = LocalTime.of(11, 59)
 
-			// Jam Sesi II (13:30 - 16:00)
+			// Jam Sesi II (13:30 - 15:50)
 			def session2Start = LocalTime.of(13, 30)
-			def session2End = LocalTime.of(16, 0)
-			
+			def session2End = LocalTime.of(15, 49)
+
 			// Jam Sesi Pre-closing (15:50 - 16:00)
 			def preClosingStart = LocalTime.of(15, 50)
 			def preClosingEnd = LocalTime.of(16, 0)
@@ -72,7 +72,7 @@ public class TradingHours {
 				KeywordUtil.logInfo("Bursa sedang buka pada Sesi I (Senin-Kamis).")
 				return true
 			}
-			
+
 			if ((localTime.isAfter(preClosingStart) || localTime.equals(preClosingStart)) && localTime.isBefore(preClosingEnd)) {
 				KeywordUtil.logInfo("Bursa sedang dalam sesi Pre-closing (Senin-Kamis).")
 				return true
@@ -87,6 +87,42 @@ public class TradingHours {
 		KeywordUtil.logInfo("Bursa sedang tutup.")
 		return false
 	}
+	
+	//  untuk mengecek jam istirahat bursa
+	@Keyword
+	def static boolean isMarketBreak() {
+		def jakartaZone = ZoneId.of('Asia/Jakarta')
+		def currentTime = ZonedDateTime.now(jakartaZone)
+		def currentDay = currentTime.getDayOfWeek()
+		def localTime = currentTime.toLocalTime()
+
+		// Jika hari kerja (Senin-Jumat)
+		if (currentDay != DayOfWeek.SATURDAY && currentDay != DayOfWeek.SUNDAY) {
+			if (currentDay == DayOfWeek.FRIDAY) {
+				// Jam istirahat Jumat: 11:30 - 14:00
+				def breakStart = LocalTime.of(11, 30)
+				def breakEnd = LocalTime.of(14, 0)
+
+				if (localTime.isAfter(breakStart) && localTime.isBefore(breakEnd)) {
+					KeywordUtil.logInfo("Bursa sedang istirahat (Jumat, 11:30 - 14:00).")
+					return true
+				}
+			} else {
+				// Jam istirahat Senin-Kamis: 12:00 - 13:30
+				def breakStart = LocalTime.of(12, 0)
+				def breakEnd = LocalTime.of(13, 30)
+
+				if (localTime.isAfter(breakStart) && localTime.isBefore(breakEnd)) {
+					KeywordUtil.logInfo("Bursa sedang istirahat (Senin-Kamis, 12:00 - 13:30).")
+					return true
+				}
+			}
+		}
+
+		KeywordUtil.logInfo("Bukan jam istirahat bursa.")
+		return false
+	}
+
 	@Keyword
 	def static boolean isSbnSecondaryAllowed() {
 		def jakartaZone = ZoneId.of('Asia/Jakarta')
@@ -100,16 +136,16 @@ public class TradingHours {
 			return false
 		}
 
-		// Sesi I (Senin-Jumat, 09:00–11:30)
+		// Sesi I (Senin-Jumat, 09:00–11:59)
 		def sesi1Start = LocalTime.of(9, 0)
-		def sesi1End   = LocalTime.of(11, 30)
+		def sesi1End   = LocalTime.of(11, 59)
 
 		if (!localTime.isBefore(sesi1Start) && localTime.isBefore(sesi1End)) {
 			KeywordUtil.logInfo("✅ SBN Secondary diperbolehkan (Sesi I).")
 			return true
 		}
 
-		KeywordUtil.logInfo("❌ SBN Secondary hanya bisa di Sesi I (09:00–11:30).")
+		KeywordUtil.logInfo("❌ SBN Secondary hanya bisa di Sesi I (09:00–11:59).")
 		return false
 	}
 }

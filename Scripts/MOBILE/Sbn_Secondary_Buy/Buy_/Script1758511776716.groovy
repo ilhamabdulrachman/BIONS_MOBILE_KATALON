@@ -59,12 +59,6 @@ start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
-end = Instant.now()
-
-seconds = (Duration.between(start, end).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
-
 def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
 
 def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
@@ -87,6 +81,12 @@ client.listen(5)
 
 // 🔌 Tutup koneksi
 client.close()
+
+end = Instant.now()
+
+seconds = (Duration.between(start, end).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 

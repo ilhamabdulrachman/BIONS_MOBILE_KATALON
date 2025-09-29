@@ -23,27 +23,44 @@ import java.time.ZoneId as ZoneId
 import java.time.format.DateTimeFormatter as DateTimeFormatter
 import java.time.Instant as Instant
 import java.time.Duration as Duration
-import com.utilities.NetworkChecker as NetworkChecker
 import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
+import groovy.json.JsonSlurper as JsonSlurper
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+
 if (isMarketOpen) {
-	KeywordUtil.logInfo("Bursa sedang buka. Melanjutkan pengujian login...")
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-// Jika bursa tutup, hentikan tes
-KeywordUtil.markFailed("Tes gagal. Bursa sedang tutup.", FailureHandling.STOP_ON_FAILURE)
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
-def elemenDashboard = findTestObject('TEST_LOGIN/stock')
+
+def elemenDashboard = findTestObject('NAVBAR/home_')
+
+def Page_Portofolio = findTestObject('Portofolio/PAGE_PORTO')
 
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
+//Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
+String applicationID = 'id.bions.bnis.android.v2'
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
+try {
+    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+
+    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+}
+catch (Exception e) {
+    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
+        FailureHandling.STOP_ON_FAILURE)
+} 
 
 //NetworkChecker.verifyInternetConnection()
-Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
-
+//Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw222', 0)
@@ -62,68 +79,64 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
+//NetworkChecker.verifyInternetConnection()
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+TcpClient client = new TcpClient()
+
+//client.connect('192.168.19.61', 62229 // FEED_SERVER_1
+client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+    )
+
+// Kirim login
+//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+//client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
+// Listen 5 detik untuk capture response login
+//client.listen(5)
+// 🔌 Tutup koneksi
+client.close()
+
 Instant end = Instant.now()
 
 long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
-
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
-
-TcpClient client = new TcpClient()
-
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-    )
-
-// 📤 Buat JSON request
-String requestMsg = '\n{\n   "action": "subscribe",\n   "channel": "marketdata",\n   "symbols": ["BBCA", "BBRI"]\n}\n'
-
-// 📤 Kirim ke server
-String response = client.sendMessage(requestMsg)
-
-// 📩 Cek response
-if (response != null) {
-    KeywordUtil.markPassed('Socket Response: ' + response)
-} else {
-    KeywordUtil.markWarning('⚠️ Tidak ada response dari server')
-}
-
-// 🔌 Tutup koneksi
-client.close()
-
-
-Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
-
+//Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
-//NetworkChecker.verifyInternetConnection()
-Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
 ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
-//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
 ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
-//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-//NetworkChecker.verifyInternetConnection()
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
+
+start1 = Instant.now()
+
+Mobile.tap(findTestObject('NAVBAR/portofolio'), 0)
+
+end1 = Instant.now()
+
+seconds = (Duration.between(start1, end1).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu masuk ke portofolio : $seconds detik")
+
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 
 Mobile.closeApplication()
 
