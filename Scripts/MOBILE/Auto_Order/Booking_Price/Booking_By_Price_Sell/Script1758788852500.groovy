@@ -30,15 +30,20 @@ import groovy.json.JsonSlurper as JsonSlurper
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Jika bursa tutup, hentikan tes
-        )
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-    KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
 
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
-def Form_Auto_Order = findTestObject('Auto_order/Form_Auto_Order')
+def Form_Auto_Order = findTestObject('Auto_order/form auto order')
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -59,12 +64,6 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Instant start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
-
-Instant end = Instant.now()
-
-long seconds = Duration.between(start, end).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
 def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
 
@@ -89,17 +88,21 @@ client.listen(5)
 // 🔌 Tutup koneksi
 client.close()
 
+Instant end = Instant.now()
+
+long seconds = Duration.between(start, end).toMillis() / 1000
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
+
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(Form_Auto_Order, 3)
-
-Mobile.tap(findTestObject('Auto_order/more'), 1)
-
-Mobile.tap(findTestObject('Auto_order/Menu_Auto_Order'), 0)
+Mobile.tap(findTestObject('Auto_order/more'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder.PNG')
+
+Mobile.tap(findTestObject('Auto_order/Menu_Auto_Order'), 1)
 
 Mobile.swipe(500, 1500, 500, 500)
 
@@ -107,11 +110,11 @@ Mobile.tap(findTestObject('Auto_order/tick_auto_order'), 0)
 
 Mobile.tap(findTestObject('Auto_order/I accept'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(Form_Auto_Order, 3)
 
 Mobile.tap(findTestObject('Auto_order/Change_stock'), 0)
 
-Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'APLN', 0)
+Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'ADES', 0)
 
 Mobile.tap(findTestObject('Auto_order/tapsaham'), 0)
 
@@ -119,7 +122,7 @@ Mobile.tap(findTestObject('Auto_order/Select_Condition'), 0)
 
 Mobile.tap(findTestObject('Auto_order/Booking_By_Price'), 0)
 
-Mobile.setText(findTestObject('Auto_order/Input_Price_'), '133', 0)
+Mobile.setText(findTestObject('Auto_order/Input_Price_'), '6900', 0)
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
@@ -127,10 +130,11 @@ Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 Mobile.swipe(500, 1500, 500, 500)
 
 //Mobile.setText(findTestObject('Auto_order/Input_Price'), '133', 0)
-
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.setText(findTestObject('Auto_order/Lot'), '3', 0)
+Mobile.setText(findTestObject('Auto_order/Lot'), '', 0)
+
+Mobile.setText(findTestObject('Auto_order/Lot'), '1', 0)
 
 Mobile.tap(findTestObject('Auto_order/Send_As_Order'), 0)
 
@@ -141,6 +145,8 @@ KeywordUtil.logInfo('Order Sent at ' + now.format(fmt))
 Mobile.tap(findTestObject('Auto_order/View_Order_List'), 0)
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.delay(10, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 

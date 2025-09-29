@@ -67,7 +67,7 @@ class ShimmerWait {
 			KeywordUtil.logInfo("Elemen target berhasil ditemukan. Shimmer telah hilang.")
 			KeywordUtil.markPassed("Shimmer menghilang seperti yang diharapkan.")
 		} catch (Exception e) {
-			KeywordUtil.markFailed("Shimmer tidak menghilang dalam ${timeout} detik atau elemen target tidak muncul. Error: " + e.getMessage())
+			KeywordUtil.markFailed("Shimmer tidak menghilang dalam ${timeout} detik . Error: " + e.getMessage())
 		}
 	}
 	@Keyword

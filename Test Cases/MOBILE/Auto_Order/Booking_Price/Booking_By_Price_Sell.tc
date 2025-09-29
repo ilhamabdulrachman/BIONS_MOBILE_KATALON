@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Booking_By_Price_Sell</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>51394112-41ac-4172-9ba6-e0e4c6018050</testCaseGuid>
+</TestCaseEntity>

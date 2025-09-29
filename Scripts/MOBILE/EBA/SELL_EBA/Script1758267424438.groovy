@@ -41,6 +41,8 @@ Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
+Instant start = Instant.now()
+
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
 def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
@@ -67,6 +69,12 @@ client.listen(5)
 
 // 🔌 Tutup koneksi
 client.close()
+
+Instant end = Instant.now()
+
+long seconds = Duration.between(start, end).toMillis() / 1000
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${seconds} detik")
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 

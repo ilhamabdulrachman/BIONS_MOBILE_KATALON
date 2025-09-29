@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Booking_by_price_exis_sell</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>a7fc1b70-bdc0-47e3-a0ac-64be508ecfb2</testCaseGuid>
+</TestCaseEntity>

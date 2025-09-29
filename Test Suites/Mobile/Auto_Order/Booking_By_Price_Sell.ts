@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>Login</name>
+   <name>Booking_By_Price_Sell</name>
    <tag></tag>
    <isRerun>false</isRerun>
    <mailRecipient></mailRecipient>
@@ -10,12 +10,12 @@
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>e6a7bb98-9dc9-4440-9ecb-9437e7ba72c3</testSuiteGuid>
+   <testSuiteGuid>e54fadd0-d402-4cb4-8ef8-3a3777f63cfd</testSuiteGuid>
    <testCaseLink>
-      <guid>1b931a79-c53e-4615-a2e3-494e5d488453</guid>
+      <guid>17f57f8a-ba96-4937-ab2c-3af2ffc7e880</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Mobile_login/LOGIN_Dev</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Auto_Order/Booking_Price/Booking_by_price_exis_sell</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

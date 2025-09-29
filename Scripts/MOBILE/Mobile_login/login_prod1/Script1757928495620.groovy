@@ -56,17 +56,18 @@ Instant start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
+def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
+
+def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
+
+KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
+
 Instant end = Instant.now()
 
 long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
-def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
-
-def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
-
-KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
@@ -95,21 +96,21 @@ client.close()
 
 Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
+ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
