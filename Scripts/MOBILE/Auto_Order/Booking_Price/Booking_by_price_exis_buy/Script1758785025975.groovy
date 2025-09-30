@@ -112,7 +112,7 @@ long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('Auto_order/_more_'), 1)
 

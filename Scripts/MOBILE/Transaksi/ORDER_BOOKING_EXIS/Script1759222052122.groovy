@@ -30,9 +30,9 @@ import java.math.BigDecimal as BigDecimal
 // Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
 String clientID = '1B029' // Ditambahkan: ID Klien
 
-String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
+String stockCode = 'BBNI' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('171')
+BigDecimal orderPrice = new BigDecimal('114')
 
 int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
@@ -42,25 +42,32 @@ String expectedStatus = 'Open' // Status yang diharapkan di TB_FO_ORDER (Kode '0
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...') // Menambahkan pengecekan market break (opsional, tapi disarankan)
+	KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...') // Menambahkan pengecekan market break (opsional, tapi disarankan)
 } else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+	boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
 
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
+	if (isMarketBreak) {
+		KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+	} else {
+		KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+	}
 }
 
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
+String applicationID = 'id.bions.bnis.android.v2'
 
+try {
+    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+
+    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+}
+catch (Exception e) {
+    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
+        FailureHandling.STOP_ON_FAILURE)
+} 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
-
 Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
-    )
+	)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
@@ -87,15 +94,12 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 1)
-
 Mobile.tap(findTestObject('Transaksi/Sell_/Buy_sell_1'), 1)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERBOOKING.PNG')
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/SKIP_BASIC_ORDER_1'), 1)
 
 Mobile.delay(10, FailureHandling.STOP_ON_FAILURE)
 
@@ -150,8 +154,6 @@ KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Orderlist3.PNG')
 
-Mobile.tap(findTestObject('Transaksi/Skip_quick_tour_orderlist'), 1)
-
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERBOOKING4.PNG')
@@ -163,13 +165,13 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
-boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatus)
+boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode,
+	lotAmount, orderPrice, expectedStatus)
 
 if (dbVerificationResult) {
-    KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
+	KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
 } else {
-    KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
+	KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
 }
 
 Mobile.closeApplication()

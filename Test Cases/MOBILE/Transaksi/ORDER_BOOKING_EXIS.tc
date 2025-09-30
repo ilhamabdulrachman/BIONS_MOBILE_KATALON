@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>ORDER_BOOKING_EXIS</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>a0130cf2-3163-48c9-aa4d-4b0f80ac626e</testCaseGuid>
+</TestCaseEntity>

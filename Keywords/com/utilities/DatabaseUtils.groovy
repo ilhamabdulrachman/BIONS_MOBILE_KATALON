@@ -12,18 +12,94 @@ class OrderVerification {
 	private static final String DB_DRIVER = "oracle.jdbc.driver.OracleDriver"
 	private static final String DB_URL = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
 	private static final String DB_USER = "bnisfix"
-	private static final String DB_PASS = "sysdev" 
+	private static final String DB_PASS = "sysdev"
+
+    /**
+     * Menerjemahkan kode CRO_STATUS dari DB menjadi deskripsi yang mudah dibaca.
+     */
+    private static String getCriteriaStatusDescription(String statusCode) {
+        // Pemetaan status untuk TB_FO_CRITERIAORDER
+        switch (statusCode) {
+            case '0':
+                return 'Queuing'
+            case 'R0':
+                return 'Request'
+            case 'R4':
+                return 'Cancel Request'
+            case '4':
+                return 'Cancelled'
+            case '8':
+                return 'Rejected'
+            case '1':
+                return 'Executed'
+            default:
+                return "Unknown Status (${statusCode})"
+        }
+    }
+    
+    /**
+     * Menerjemahkan kode STATUS dari TB_FO_ORDER menjadi deskripsi yang mudah dibaca.
+     * Menggunakan tabel status order yang baru disediakan oleh pengguna.
+     */
+    private static String getOrderStatusDescription(String statusCode) {
+        // Pemetaan status umum untuk order book utama (TB_FO_ORDER)
+        switch (statusCode) {
+            case '0':
+                return 'Open' // Sebelumnya: New/Pending
+            case '1':
+                return 'Partial' // Sebelumnya: Partially Filled
+            case '2':
+                return 'Match (Executed)' // Sebelumnya: Filled (Executed)
+            case '4':
+                return 'Withdraw (Cancelled)' // Sebelumnya: Cancelled
+            case '5':
+                return 'Amend'
+            case '8':
+                return 'Reject' // Sebelumnya: Rejected
+            case 'A':
+                return 'Pending New' // Tetap
+            case 'B1':
+                return 'Hold Booking'
+            case 'B2':
+                return 'Booked'
+            case 'D':
+                return 'Delete'
+            case 'N5':
+                return 'New Order Amend'
+            case 'R0':
+                return 'Request Entry'
+            case 'R4':
+                return 'Request Withdraw (Cancel Request)'
+            case 'R5':
+                return 'Request Amend'
+            case 'RB':
+                return 'Request Booking'
+            case 'RC':
+                return 'Request Cancel Booking'
+            case 'RD':
+                return 'Request Delete'
+            case 'RT':
+                return 'Request Temp'
+            case 'T':
+                return 'Temporary'
+            default:
+                return "Unknown Status (${statusCode})"
+        }
+    }
 
 	/**
-	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER.
+	 * [FUNGSI UTAMA UNTUK KRITERIA/AUTO ORDER]
+	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan 
+     * order BUKAN order yang terkirim di TB_FO_ORDER.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
 	static boolean verifyLatestOrder(String clientCode, String expectedStockCode, int expectedLot, BigDecimal expectedPrice) {
 		Connection conn = null
-		ResultSet rs = null
+		ResultSet rsCriteria = null
+		ResultSet rsOrder = null
 
-	
-		String sql = """
+        // Query 1: Memeriksa data terbaru di TB_FO_CRITERIAORDER
+		String sqlCriteria = """
             SELECT * FROM (
                 SELECT * FROM BNISFIX.TB_FO_CRITERIAORDER 
                 WHERE USR_ID = ? 
@@ -31,32 +107,71 @@ class OrderVerification {
             ) WHERE ROWNUM <= 1
         """
 
+        // Query 2: Memeriksa apakah order yang SAMA masuk ke TB_FO_ORDER
+        String sqlOrder = """
+            SELECT * FROM (
+                SELECT * FROM BNISFIX.TB_FO_ORDER 
+                WHERE CLS_INITIALCODE = ?
+                ORDER BY ORDER_TIME DESC 
+            ) WHERE ROWNUM <= 1
+        """
+
 		try {
 			Class.forName(DB_DRIVER)
 			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+            
+            // --- VERIFIKASI TABEL 1: TB_FO_CRITERIAORDER ---
+			def pstmtCriteria = conn.prepareStatement(sqlCriteria)
+			pstmtCriteria.setString(1, clientCode)
 
-			def pstmt = conn.prepareStatement(sql)
-			pstmt.setString(1, clientCode) // Menggunakan clientCode
+			rsCriteria = pstmtCriteria.executeQuery()
 
-			rs = pstmt.executeQuery()
+			if (rsCriteria.next()) {
+				// Ambil Data Utama dari TB_FO_CRITERIAORDER
+				String actualOrderId = rsCriteria.getString("ORD_ID") 
+				String actualStockCode = rsCriteria.getString("CRO_CRITERIASYMBOL")
+				int actualLot = rsCriteria.getInt("CRO_LOT")
+				BigDecimal actualPrice = rsCriteria.getBigDecimal("CRO_PRICE")
+                String rawStatus = rsCriteria.getString("CRO_STATUS") 
+                String actualStatus = getCriteriaStatusDescription(rawStatus)
 
-			if (rs.next()) {
-				
-				String actualStockCode = rs.getString("CRO_CRITERIASYMBOL") 
-				int actualLot = rs.getInt("CRO_LOT") 
-				BigDecimal actualPrice = rs.getBigDecimal("CRO_PRICE") 
-
-				// --- Logika Verifikasi ---
+				// --- Logika Pencocokan Data Kriteria ---
 				boolean stockMatch = actualStockCode.equalsIgnoreCase(expectedStockCode)
 				boolean lotMatch = actualLot == expectedLot
 				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
+                
+                // --- Logika Verifikasi TB_FO_ORDER ---
+                boolean orderTerkirim = false
+                
+                // Siapkan statement untuk TB_FO_ORDER
+                def pstmtOrder = conn.prepareStatement(sqlOrder)
+                pstmtOrder.setString(1, clientCode)
+                rsOrder = pstmtOrder.executeQuery()
 
-				if (stockMatch && lotMatch && priceMatch) {
-					KeywordUtil.logInfo("✅ Verifikasi DB Order Berhasil. Semua detail auto order cocok.")
-					KeywordUtil.logInfo("   Kode Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
+                if (rsOrder.next()) {
+                    orderTerkirim = true
+                    String sentStockCode = rsOrder.getString("STK_INITIALCODE")
+                    String sentOrderID = rsOrder.getString("ORD_ID")
+
+                    // Jika order kriteria dan order yang terkirim cocok (Gagal karena seharusnya kriteria belum terpicu)
+                    if (sentStockCode.equalsIgnoreCase(expectedStockCode)) {
+                        KeywordUtil.markFailed("❌ Verifikasi GAGAL: Auto Order (Kriteria) ditemukan, TETAPI Order dengan saham ${sentStockCode} juga ditemukan di TB_FO_ORDER (Order ID: ${sentOrderID}). Seharusnya belum terkirim.")
+                        return false
+                    }
+                }
+                
+                // --- HASIL VERIFIKASI AKHIR KRITERIA ---
+				if (stockMatch && lotMatch && priceMatch && !orderTerkirim) {
+					KeywordUtil.logInfo("✅ Verifikasi DB Berhasil: Data kriteria cocok dan order belum terkirim ke Order Book.")
+					KeywordUtil.logInfo("   [Kriteria Order]: ID: ${actualOrderId}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
 					return true
-				} else {
-					KeywordUtil.markFailed("❌ Verifikasi DB Order GAGAL. Data tidak cocok.")
+				} else if (orderTerkirim) {
+                    KeywordUtil.markFailed("❌ Verifikasi GAGAL: Order ditemukan di Order Book utama. Order Kriteria seharusnya hanya tersimpan, belum terkirim.")
+                    return false
+                }
+                else {
+					KeywordUtil.markFailed("❌ Verifikasi Kriteria GAGAL: Detail data kriteria tidak cocok.")
+					KeywordUtil.logError("   Order ID Ditemukan: ${actualOrderId}, Status: ${actualStatus}") 
 					KeywordUtil.logError("   Ekspektasi Saham: ${expectedStockCode}, Aktual: ${actualStockCode}")
 					KeywordUtil.logError("   Ekspektasi Lot: ${expectedLot}, Aktual: ${actualLot}")
 					KeywordUtil.logError("   Ekspektasi Harga: ${expectedPrice}, Aktual: ${actualPrice}")
@@ -67,11 +182,82 @@ class OrderVerification {
 				return false
 			}
 		} catch (Exception e) {
-           
-			KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage()) 
+
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage())
 			return false
 		} finally {
-			if (rs != null) rs.close()
+			if (rsCriteria != null) rsCriteria.close()
+            if (rsOrder != null) rsOrder.close()
+			if (conn != null) conn.close()
+		}
+	}
+
+    /**
+	 * [FUNGSI BARU UNTUK REGULAR ORDER]
+	 * Memverifikasi data order terbaru di TB_FO_ORDER (Order Transaksi Langsung).
+	 */
+	@com.kms.katalon.core.annotation.Keyword
+	static boolean verifyLatestRegularOrder(String clientCode, String expectedStockCode, int expectedLot, BigDecimal expectedPrice, String expectedStatus) {
+		Connection conn = null
+		ResultSet rsOrder = null
+
+        // Query: Memeriksa data terbaru di TB_FO_ORDER
+		String sqlOrder = """
+            SELECT * FROM (
+                SELECT * FROM BNISFIX.TB_FO_ORDER 
+                WHERE CLS_INITIALCODE = ? 
+                ORDER BY ORS_REQENTDT DESC
+            ) WHERE ROWNUM <= 1
+        """
+
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+
+			def pstmtOrder = conn.prepareStatement(sqlOrder)
+			pstmtOrder.setString(1, clientCode)
+
+			rsOrder = pstmtOrder.executeQuery()
+
+			if (rsOrder.next()) {
+				// Ambil Data Utama dari TB_FO_ORDER
+				String actualOrderId = rsOrder.getString("ORD_ID") 
+				String actualStockCode = rsOrder.getString("SEC_ID") // Asumsi: Kolom saham di TB_FO_ORDER
+				int actualLot = rsOrder.getInt("ORD_LOT") // Asumsi: Kolom lot di TB_FO_ORDER
+				BigDecimal actualPrice = rsOrder.getBigDecimal("ORD_PRICE") // Asumsi: Kolom harga di TB_FO_ORDER
+                String rawStatus = rsOrder.getString("ORS_ID") // Asumsi: Kolom status di TB_FO_ORDER
+                String actualStatus = getOrderStatusDescription(rawStatus)
+
+				// --- Logika Pencocokan Data Order Transaksi ---
+				boolean stockMatch = actualStockCode.equalsIgnoreCase(expectedStockCode)
+				boolean lotMatch = actualLot == expectedLot
+				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
+                // Verifikasi status order (misalnya: 'New/Pending' atau 'Filled')
+                boolean statusMatch = actualStatus.equalsIgnoreCase(expectedStatus)
+                
+				if (stockMatch && lotMatch && priceMatch && statusMatch) {
+					KeywordUtil.logInfo("✅ Verifikasi DB Order Transaksi Berhasil.")
+					KeywordUtil.logInfo("   [Regular Order]: ID: ${actualOrderId}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
+					return true
+				} else {
+					KeywordUtil.markFailed("❌ Verifikasi DB Order Transaksi GAGAL. Data tidak cocok.")
+					KeywordUtil.logError("   Order ID Ditemukan: ${actualOrderId}, Status: ${actualStatus}") 
+					KeywordUtil.logError("   Ekspektasi Saham: ${expectedStockCode}, Aktual: ${actualStockCode}")
+					KeywordUtil.logError("   Ekspektasi Lot: ${expectedLot}, Aktual: ${actualLot}")
+					KeywordUtil.logError("   Ekspektasi Harga: ${expectedPrice}, Aktual: ${actualPrice}")
+                    KeywordUtil.logError("   Ekspektasi Status: ${expectedStatus}, Aktual: ${actualStatus} (Raw: ${rawStatus})")
+					return false
+				}
+			} else {
+				KeywordUtil.markFailed("❌ Tidak ada order yang ditemukan di TB_FO_ORDER untuk CLS_INITIALCODE: ${clientCode}")
+				return false
+			}
+		} catch (Exception e) {
+
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage())
+			return false
+		} finally {
+			if (rsOrder != null) rsOrder.close()
 			if (conn != null) conn.close()
 		}
 	}

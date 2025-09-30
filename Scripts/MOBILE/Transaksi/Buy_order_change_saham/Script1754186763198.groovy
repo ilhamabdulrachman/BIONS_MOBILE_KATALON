@@ -17,7 +17,39 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 import com.utilities.TcpClient as TcpClient
-import com.kms.katalon.core.util.KeywordUtil
+import com.kms.katalon.core.util.KeywordUtil as KeywordUtil
+import java.time.ZonedDateTime as ZonedDateTime
+import java.time.ZoneId as ZoneId
+import java.time.format.DateTimeFormatter as DateTimeFormatter
+import java.time.Instant as Instant
+import java.time.Duration as Duration
+import com.utilities.TradingHours as TradingHours
+import com.utilities.ShimmerWait as ShimmerWait
+import groovy.json.JsonSlurper as JsonSlurper
+import com.utilities.OrderVerification as OrderVerification
+import java.math.BigDecimal as BigDecimal
+
+String clientID = '1B029'
+
+String stockCode = 'APLN'
+
+BigDecimal orderPrice = new BigDecimal('171')
+
+int lotAmount = 3
+
+boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+
+if (isMarketOpen) {
+	KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+} else {
+	boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
+	if (isMarketBreak) {
+		KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+	} else {
+		KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+	}
+}
 
 //def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
 //NetworkChecker.verifyInternetConnection()
