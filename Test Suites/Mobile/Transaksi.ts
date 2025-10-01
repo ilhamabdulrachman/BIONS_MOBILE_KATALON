@@ -12,10 +12,10 @@
    <rerunImmediately>false</rerunImmediately>
    <testSuiteGuid>efe77d8b-f009-432a-bfcd-6386c2653a9c</testSuiteGuid>
    <testCaseLink>
-      <guid>a08077f9-eaa0-467e-a8cd-d8f63f47f7bc</guid>
+      <guid>04e25272-8e06-4b17-9bad-324d97677a63</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Transaksi/Buy_order_change_saham</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Transaksi/SELL_</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>
