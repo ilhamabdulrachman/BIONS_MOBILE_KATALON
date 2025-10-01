@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>LOGIN_V3</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>fc98a64d-2ee2-4f0e-89a6-404b4a1fbdd6</testCaseGuid>
+</TestCaseEntity>
