@@ -200,17 +200,17 @@ class OrderVerification {
 	static boolean verifyLatestRegularOrder(String clientCode, String expectedStockCode, int expectedLot, BigDecimal expectedPrice, List<String> expectedStatuses, String expectedSide) {
 		Connection conn = null
 		ResultSet rsOrder = null
-		
+
 		// Konversi Side (B/S) menjadi kode DB (1/2)
 		String dbSideCode
-        if (expectedSide.equalsIgnoreCase('B')) {
-            dbSideCode = '1' // 1 = Buy
-        } else if (expectedSide.equalsIgnoreCase('S')) {
-            dbSideCode = '2' // 2 = Sell
-        } else {
-            KeywordUtil.markFailed("❌ Tipe transaksi tidak valid: Harus 'B' (Buy) atau 'S' (Sell). Diterima: ${expectedSide}")
-            return false
-        }
+		if (expectedSide.equalsIgnoreCase('B')) {
+			dbSideCode = '1' // 1 = Buy
+		} else if (expectedSide.equalsIgnoreCase('S')) {
+			dbSideCode = '2' // 2 = Sell
+		} else {
+			KeywordUtil.markFailed("❌ Tipe transaksi tidak valid: Harus 'B' (Buy) atau 'S' (Sell). Diterima: ${expectedSide}")
+			return false
+		}
 
 		// Query: Memeriksa data terbaru di TB_FO_ORDER
 		// DITAMBAHKAN filter ORD_SIDE
@@ -241,13 +241,13 @@ class OrderVerification {
 				BigDecimal actualPrice = rsOrder.getBigDecimal("ORD_PRICE") // Asumsi: Kolom harga di TB_FO_ORDER
 				String rawStatus = rsOrder.getString("ORS_ID") // Asumsi: Kolom status di TB_FO_ORDER
 				String actualSideRaw = rsOrder.getString("ORD_SIDE") // Ambil data side
-				
+
 				// --- Tambahkan kolom Reject Date/Description ---
 				// ORS_REJECTDT (Reject Date Time)
-				String actualRejectDate = rsOrder.getString("ORS_REJECTDT") 
+				String actualRejectDate = rsOrder.getString("ORS_REJECTDT")
 				// Kolom ORS_REJECTDESC menyimpan deskripsi alasan reject (Diperbarui)
-				String actualRejectReason = rsOrder.getString("ORS_REJECTDESC") 
-				
+				String actualRejectReason = rsOrder.getString("ORS_REJECTDESC")
+
 				String actualStatus = getOrderStatusDescription(rawStatus)
 				String actualSide = (actualSideRaw == '1' ? 'Buy (B)' : (actualSideRaw == '2' ? 'Sell (S)' : "Unknown (${actualSideRaw})"))
 
@@ -256,13 +256,13 @@ class OrderVerification {
 				boolean lotMatch = actualLot == expectedLot
 				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
 				boolean sideMatch = actualSideRaw.equals(dbSideCode) // Verifikasi kode side (1 atau 2)
-				
+
 				// Verifikasi status order: cek apakah status aktual ada di dalam List status yang diekspektasi
 				boolean statusMatch = expectedStatuses.contains(actualStatus)
 
 				if (stockMatch && lotMatch && priceMatch && statusMatch && sideMatch) {
 					KeywordUtil.logInfo("✅ Verifikasi DB Order Transaksi Berhasil.")
-					KeywordUtil.logInfo("	[Regular Order]: ID: ${actualOrderId}, Side: ${actualSide}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
+					KeywordUtil.logInfo("	[Detail Order]: ID: ${actualOrderId}, Side: ${actualSide}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
 					// Log info Reject (Tanggal dan Alasan)
 					KeywordUtil.logInfo("	[Reject Info]: Tanggal (ORS_REJECTDT): ${actualRejectDate}, Alasan (ORS_REJECTDESC): ${actualRejectReason}")
 					return true

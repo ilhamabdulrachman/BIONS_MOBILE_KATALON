@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Sell_Order_S</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>114b330c-bd64-4c2f-950d-8d24344ad10a</testCaseGuid>
+</TestCaseEntity>
