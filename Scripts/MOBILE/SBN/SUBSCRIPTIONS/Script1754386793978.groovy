@@ -21,7 +21,9 @@ import com.kms.katalon.core.util.KeywordUtil
 
 //def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
+//Mobile.startApplication('/Users/bionsrevamp/Downloads/app-production-profile.apk', true)
+
+
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 

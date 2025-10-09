@@ -32,12 +32,14 @@ String clientID = '1B029' // Ditambahkan: ID Klien
 
 String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('171')
+BigDecimal orderPrice = new BigDecimal('175')
 
 int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
-String side = 'S'
-List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)','Amend','Reject','Pending New','Hold Booking','Booked']
+String side = 'B'
+
+List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
+    , 'Hold Booking', 'Booked']
 
 // --- Verifikasi Jam Bursa ---
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -97,7 +99,7 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/Sell_/Buy_sell_1'), 1)
+Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
@@ -108,11 +110,9 @@ Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 
 //Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
-
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
 
 //Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERB.PNG')
 
 start = Instant.now()
@@ -127,7 +127,15 @@ KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman form buy : $seconds detik")
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERC.PNG')
 
+start2 = Instant.now()
+
 Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
+
+end2 = Instant.now()
+
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu submit order : $seconds detik")
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
 
@@ -150,7 +158,7 @@ client.listen(10)
 // Tutup koneksi
 client.close()
 
- start1 = Instant.now()
+start1 = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
 
@@ -174,7 +182,7 @@ KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses,side)
+    lotAmount, orderPrice, expectedStatuses, side)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')

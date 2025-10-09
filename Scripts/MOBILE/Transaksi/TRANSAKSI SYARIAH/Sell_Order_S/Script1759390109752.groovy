@@ -32,9 +32,9 @@ String clientID = '1B029' // Ditambahkan: ID Klien
 
 String stockCode = 'ACES' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('57')
+BigDecimal orderPrice = new BigDecimal('70')
 
-int lotAmount = 2 // Ditambahkan: Sesuaikan dengan lot yang di-order
+int lotAmount = 1 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
 String side = 'S'
 
