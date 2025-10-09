@@ -80,11 +80,11 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
-TcpClient client = new TcpClient()
+//TcpClient client = new TcpClient()
 
 //client.connect('192.168.19.61', 62229 // FEED_SERVER_1
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-    )
+//client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+ //   )
 
 // Kirim login
 //client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
@@ -92,13 +92,15 @@ client.connect('trade.bions.id', 62229 // FEED_SERVER_1
 // Listen 5 detik untuk capture response login
 //client.listen(5)
 // 🔌 Tutup koneksi
-client.close()
+//client.close()
 
 Instant end = Instant.now()
 
 long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 //Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
@@ -112,6 +114,7 @@ seconds = Duration.between(start1, end1).toMillis() / 1000
 
 KeywordUtil.logInfo("⏱️ Waktu sampai ke orderlist: $seconds detik")
 
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 ShimmerWait.waitForShimmerToDisappear(Orderlist, 2)
 

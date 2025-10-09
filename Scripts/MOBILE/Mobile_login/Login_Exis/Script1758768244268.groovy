@@ -67,9 +67,29 @@ Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw333', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
-Instant start = Instant.now()
+start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
+
+//NetworkChecker.verifyInternetConnection()
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
+//TcpClient client = new TcpClient()
+//client.connect('192.168.19.61', 62229 // FEED_SERVER_1
+//client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+//  )
+// Kirim login
+//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+//client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
+// Listen 5 detik untuk capture response login
+//client.listen(5)
+// 🔌 Tutup koneksi
+//client.close()
+end = Instant.now()
+
+seconds = (Duration.between(start, end).toMillis() / 10000.0)
+
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
 def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
 
@@ -77,61 +97,39 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
-//NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
-
-TcpClient client = new TcpClient()
-
-//client.connect('192.168.19.61', 62229 // FEED_SERVER_1
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-
-    )
-
-// Kirim login
-//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-//client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
-
-// Listen 5 detik untuk capture response login
-//client.listen(5)
-
-// 🔌 Tutup koneksi
-client.close()
-
-Instant end = Instant.now()
-
-long seconds = Duration.between(start, end).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
-
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 //Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-
+//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 
-Mobile.tap (findTestObject('NAVBAR/portofolio'),0)
+Instant start1 = Instant.now()
+
+Mobile.tap(findTestObject('NAVBAR/portofolio'), 0)
+
+Instant end1 = Instant.now()
+
+long seconds = Duration.between(start1, end1).toMillis() / 1000
+
+KeywordUtil.logInfo("⏱️ Waktu sampai Portofolio: $seconds detik")
 
 Mobile.closeApplication()
 

@@ -5,20 +5,28 @@ import java.sql.DriverManager
 import java.sql.ResultSet
 import com.kms.katalon.core.util.KeywordUtil
 import java.math.BigDecimal
+import java.util.List
 
 class OrderVerification {
 
 	// --- 1. KONFIGURASI ORACLE ---
 	private static final String DB_DRIVER = "oracle.jdbc.driver.OracleDriver"
+
+	// --- KONFIGURASI KONEKSI UTAMA (bnisfix) ---
 	private static final String DB_URL = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
 	private static final String DB_USER = "bnisfix"
 	private static final String DB_PASS = "sysdev"
+
+	// --- KONFIGURASI KONEKSI ALTERNATIF (bnisfo) ---
+	private static final String DB_URL_ALT = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
+	private static final String DB_USER_ALT = "bnisfo"
+	private static final String DB_PASS_ALT = "sysdev"
 
 	/**
 	 * Menerjemahkan kode CRO_STATUS 
 	 */
 	private static String getCriteriaStatusDescription(String statusCode) {
-		// Pemetaan status untuk TB_FO_CRITERIAORDER
+		//  status untuk TB_FO_CRITERIAORDER
 		switch (statusCode) {
 			case '0':
 				return 'Queuing'
@@ -62,7 +70,6 @@ class OrderVerification {
 			case 'B2':
 				return 'Booked'
 			case 'D':
-				return 'Delete'
 			case 'N5':
 				return 'New Order Amend'
 			case 'R0':
@@ -72,13 +79,9 @@ class OrderVerification {
 			case 'R5':
 				return 'Request Amend'
 			case 'RB':
-				return 'Request Booking'
 			case 'RC':
-				return 'Request Cancel Booking'
 			case 'RD':
-				return 'Request Delete'
 			case 'RT':
-				return 'Request Temp'
 			case 'T':
 				return 'Temporary'
 			default:
@@ -87,8 +90,26 @@ class OrderVerification {
 	}
 
 	/**
+	 * Menerjemahkan kode STATUS dari TB_FO_BONDTRANSACTION.
+	 * Kriteria: 'CR'=CONFIRMED, 'RQ'=PROCCESING, 'RJ'=REJECT
+	 */
+	private static String getBondTransactionStatusDescription(String statusCode) {
+		// Pemetaan status untuk TB_FO_BONDTRANSACTION
+		switch (statusCode) {
+			case 'CR':
+				return 'CONFIRMED'
+			case 'RQ':
+				return 'PROCCESING' 
+			case 'RJ':
+				return 'REJECT'
+			default:
+				return "Unknown Status (${statusCode})"
+		}
+	}
+
+	/**
 	 * [FUNGSI UTAMA UNTUK KRITERIA/AUTO ORDER]
-	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan 
+	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan 
 	 * order BUKAN order yang terkirim di TB_FO_ORDER.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
@@ -117,10 +138,11 @@ class OrderVerification {
 
 		try {
 			Class.forName(DB_DRIVER)
+			// Menggunakan koneksi UTAMA (bnisfix)
 			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
 
 			// --- VERIFIKASI TABEL 1: TB_FO_CRITERIAORDER ---
-			def pstmtCriteria = conn.prepareStatement(sqlCriteria.trim()) // FIX: Tambah .trim()
+			def pstmtCriteria = conn.prepareStatement(sqlCriteria.trim())
 			pstmtCriteria.setString(1, clientCode)
 
 			rsCriteria = pstmtCriteria.executeQuery()
@@ -143,7 +165,7 @@ class OrderVerification {
 				boolean orderTerkirim = false
 
 				// Siapkan statement untuk TB_FO_ORDER
-				def pstmtOrder = conn.prepareStatement(sqlOrder.trim()) // FIX: Tambah .trim()
+				def pstmtOrder = conn.prepareStatement(sqlOrder.trim())
 				pstmtOrder.setString(1, clientCode)
 				rsOrder = pstmtOrder.executeQuery()
 
@@ -225,6 +247,7 @@ class OrderVerification {
 
 		try {
 			Class.forName(DB_DRIVER)
+			// Menggunakan koneksi UTAMA (bnisfix)
 			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
 
 			def pstmtOrder = conn.prepareStatement(sqlOrder.trim()) // FIX: Tambah .trim()
@@ -288,6 +311,89 @@ class OrderVerification {
 			return false
 		} finally {
 			if (rsOrder != null) rsOrder.close()
+			if (conn != null) conn.close()
+		}
+	}
+
+	/**
+	 * [FUNGSI UTAMA UNTUK BOND TRANSACTION]
+	 * Memverifikasi data transaksi Obligasi/Bond terbaru di TB_FO_BONDTRANSACTION.
+	 * Memerlukan verifikasi nama kolom di DB.
+	 */
+	@com.kms.katalon.core.annotation.Keyword
+	static boolean verifyLatestBondTransaction(String clientCode, String expectedBondCode, BigDecimal expectedNominal, BigDecimal expectedPrice, List<String> expectedStatuses) {
+		Connection conn = null
+		ResultSet rsBond = null
+
+		// Query: Memeriksa data terbaru di TB_FO_BONDTRANSACTION
+		String sqlBond = """
+			SELECT * FROM (
+				SELECT * FROM BNISFO.TB_FO_BONDTRANSACTION  
+				WHERE USR_ID = ?
+				ORDER BY TRXDATE DESC
+			) WHERE ROWNUM <= 1
+		"""
+
+		try {
+			Class.forName(DB_DRIVER)
+			// Menggunakan koneksi UTAMA (bnisfix)
+			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+
+			def pstmtBond = conn.prepareStatement(sqlBond.trim())
+			pstmtBond.setString(1, clientCode) // Binding USR_ID
+
+			rsBond = pstmtBond.executeQuery()
+
+			if (rsBond.next()) {
+				// Ambil Data Utama dari TB_FO_BONDTRANSACTION
+				//
+				// !!! PENTING: MOHON VERIFIKASI NAMA-NAMA KOLOM DI BAWAH INI SESUAI DENGAN SKEMA DB ANDA.
+				//              GANTI STRING DALAM TANDA KUTIP DENGAN NAMA KOLOM YANG SEBENARNYA JIKA BERBEDA.
+				//
+				String actualTransactionId = rsBond.getString("TRXID")
+				String actualBondCode = rsBond.getString("BONDID")
+				BigDecimal actualNominal = rsBond.getBigDecimal("NOMINAL")
+				BigDecimal actualPrice = rsBond.getBigDecimal("PRICE")
+				String actualTrxDate = rsBond.getString("TRXDATE")
+				String rawStatus = rsBond.getString("STATUS") // <-- KEMUNGKINAN BESAR ERROR DI SINI
+				String actualRejectReason = rsBond.getString("REJECT_DESC")
+
+				// Konversi Status Bond
+				String actualStatus = getBondTransactionStatusDescription(rawStatus)
+
+				// --- Logika Pencocokan Data Bond Transaksi ---
+				boolean bondCodeMatch = actualBondCode.equalsIgnoreCase(expectedBondCode)
+				boolean nominalMatch = actualNominal.compareTo(expectedNominal) == 0
+				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
+				
+				// Verifikasi status order: cek apakah status aktual ada di dalam List status yang diekspektasi
+				boolean statusMatch = expectedStatuses.contains(actualStatus)
+				
+				if (bondCodeMatch && nominalMatch && priceMatch && statusMatch) {
+					KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi Berhasil (CODE, NOMINAL, PRICE, STATUS).")
+					KeywordUtil.logInfo("	[Detail Bond]: ID: ${actualTransactionId}, Bond: ${actualBondCode}, Nominal: ${actualNominal}, Price: ${actualPrice}, Status: ${actualStatus} (Raw: ${rawStatus})")
+					KeywordUtil.logInfo("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
+					return true
+				} else {
+					KeywordUtil.markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Data tidak cocok.")
+					KeywordUtil.logError("	Transaksi ID Ditemukan: ${actualTransactionId}")
+					KeywordUtil.logError("	Ekspektasi Bond Code: ${expectedBondCode}, Aktual: ${actualBondCode}")
+					KeywordUtil.logError("	Ekspektasi Nominal: ${expectedNominal}, Aktual: ${actualNominal}")
+					KeywordUtil.logError("	Ekspektasi Price: ${expectedPrice}, Aktual: ${actualPrice}")
+					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus})")
+					KeywordUtil.logError("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
+					return false
+				}
+			} else {
+				KeywordUtil.markFailed("❌ Tidak ada transaksi Bond yang ditemukan di TB_FO_BONDTRANSACTION untuk USR_ID: ${clientCode}")
+				return false
+			}
+		} catch (Exception e) {
+
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage())
+			return false
+		} finally {
+			if (rsBond != null) rsBond.close()
 			if (conn != null) conn.close()
 		}
 	}

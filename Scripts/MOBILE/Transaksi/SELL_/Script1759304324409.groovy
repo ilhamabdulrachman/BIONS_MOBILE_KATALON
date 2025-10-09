@@ -32,13 +32,14 @@ String clientID = '1B029' // Ditambahkan: ID Klien
 
 String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('171')
+BigDecimal orderPrice = new BigDecimal('176')
 
-int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
+int lotAmount = 1 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
 String side = 'S'
-List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)','Amend','Reject','Pending New','Hold Booking','Booked']
 
+List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
+    , 'Hold Booking', 'Booked']
 
 // --- Verifikasi Jam Bursa ---
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -98,7 +99,7 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/Sell_/Buy_sell_1'), 1)
+Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
@@ -136,11 +137,12 @@ client.connect('192.168.19.61', 62229)
 
 // Kirim login - Menggunakan clientID dari variabel (Sintaks diperbaiki)
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
+
 // Listen 5 detik untuk capture response login
 client.listen(5)
 
 // Kirim subscribe order - Menggunakan clientID dari variabel (Sintaks diperbaiki)
-client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"$clientID\"}")
+client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"${clientID}\"}")
 
 // Listen 10 detik untuk capture response order
 client.listen(10)
@@ -172,7 +174,7 @@ KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses,side)
+    lotAmount, orderPrice, expectedStatuses, side)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
