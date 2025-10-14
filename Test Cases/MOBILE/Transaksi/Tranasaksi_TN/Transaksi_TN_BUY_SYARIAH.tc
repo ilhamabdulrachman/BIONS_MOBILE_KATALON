@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Transaksi_TN_BUY_SYARIAH</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>f6e844b1-3e80-4912-aebe-d44e1c5bfb1c</testCaseGuid>
+</TestCaseEntity>
