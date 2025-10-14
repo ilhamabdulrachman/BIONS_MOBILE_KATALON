@@ -74,17 +74,18 @@ Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
-//TcpClient client = new TcpClient()
+TcpClient client = new TcpClient()
 //client.connect('192.168.19.61', 62229 // FEED_SERVER_1
-//client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-//  )
+client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+  )
 // Kirim login
 //client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-//client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
+client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
 // Listen 5 detik untuk capture response login
-//client.listen(5)
+client.listen(5)
 // 🔌 Tutup koneksi
-//client.close()
+client.close()
+
 end = Instant.now()
 
 seconds = (Duration.between(start, end).toMillis() / 10000.0)

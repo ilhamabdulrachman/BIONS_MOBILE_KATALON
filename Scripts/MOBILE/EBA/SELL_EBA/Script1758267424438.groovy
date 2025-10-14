@@ -24,63 +24,66 @@ import java.time.format.DateTimeFormatter as DateTimeFormatter
 import java.time.Instant as Instant
 import java.time.Duration as Duration
 
+def clientID = '1B029'
+def expectedBondCode = 'INDAH0105'
+def expectedNominal = new BigDecimal('1000000')
+// Asumsi Price: Harap ganti 100 dengan harga aktual yang Anda masukkan atau baca dari UI
+def expectedPrice = new BigDecimal('101')
+
+def expectedStatuses = ['CONFIRMED', 'PROCCESING' , 'REJECT']
+
+// --- 2. SETUP & START APLIKASI ---
+String applicationID = 'id.bions.bnis.android.v2'
+
+try {
+	Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+
+	KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+}
+catch (Exception e) {
+	KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(),
+		FailureHandling.STOP_ON_FAILURE)
+}
+
 //def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
+//Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 //NetworkChecker.verifyInternetConnection()
-Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
+//Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
-
+Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0)
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
-
 Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
-
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
-Instant start = Instant.now()
-
+Instant startLogin = Instant.now()
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
-def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
+def now = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"))
+def fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+KeywordUtil.logInfo("Login successful at " + now.format(fmt))
 
-def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
-
-KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
-
-//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
-
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
+// --- 4. VERIFIKASI DENGAN TCP CLIENT (KEEP AS IS) ---
 TcpClient client = new TcpClient()
-
-client.connect('192.168.19.61', 62229 // FEED_SERVER_1
-    )
-
-// Kirim login
-client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-
-// Listen 5 detik untuk capture response login
+client.connect('192.168.19.61', 62229)
+client.sendMessage("{ \"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q\" }")
 client.listen(5)
-
-// 🔌 Tutup koneksi
 client.close()
 
-Instant end = Instant.now()
+Instant endLogin = Instant.now()
+long secondsLogin = Duration.between(startLogin, endLogin).toMillis() / 1000
+KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${secondsLogin} detik")
 
-long seconds = Duration.between(start, end).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: ${seconds} detik")
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
-
-Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
+//Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
 Mobile.tap(findTestObject('SBN/Tap_Fixed_Income'), 1)
 
@@ -128,9 +131,26 @@ long seconds = Duration.between(start, end).toMillis() / 1000
 
 KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
 
+KeywordUtil.logInfo("Memulai Verifikasi Database untuk TB_FO_BONDTRANSACTION...")
+
+
+boolean bondResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestBondTransaction'(
+	clientID,
+	expectedBondCode,
+	expectedNominal,
+	expectedPrice,
+	expectedStatuses,
+)
+
+if (bondResult) {
+	KeywordUtil.markPassed("✅ Verifikasi DB Bond Transaksi Berhasil: Data order ${expectedBondCode} ditemukan di database dengan status yang diharapkan.")
+} else {
+	KeywordUtil.markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Cek log error Custom Keyword.")
+}
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba8.PNG')
 
-Mobile.tap(findTestObject('EBA_BUY/skip_tour_eba'), 0)
+//Mobile.tap(findTestObject('EBA_BUY/skip_tour_eba'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fixedincomeeba9.PNG')
 

@@ -15,7 +15,7 @@
       <guid>bdb1cf57-c923-483e-b5b8-fa3b53d90c49</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Transaksi/BUY_ORDER_BOOKING</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Transaksi/BASIC_ORDER/BUY_ORDER_BOOKING</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>
