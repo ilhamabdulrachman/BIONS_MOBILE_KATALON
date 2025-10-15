@@ -40,16 +40,18 @@ if (isAllowed) {
 // Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
 String clientID = '1B029' // Ditambahkan: ID Klien
 
-String stockCode = 'TLKM' // Ditambahkan: Sesuaikan dengan saham yang di-order
+String stockCode = 'KICI' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('328')
+BigDecimal orderPrice = new BigDecimal('412')
 
-int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
+int lotAmount = 1 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
 String side = 'B'
 
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
+List<String> expectedBoardID = ['TN']
+
 
 // --- Verifikasi Jam Bursa ---
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -110,28 +112,43 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_1.PNG')
+
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_2.PNG')
 
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), 'TLKM', 0)
+
+Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), 'KICI', 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_3.PNG')
+
 
 Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_4.PNG')
+
 
 //Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_5.PNG')
 
 //Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERB.PNG')
 
 start = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/BOARD'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_6.PNG')
+
 
 Mobile.tap(findTestObject('Transaksi/TAP_TN'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_7.PNG')
+
 
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_9.PNG')
+
 
 Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_8.PNG')
+
 
 end = Instant.now()
 
@@ -144,6 +161,8 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 start2 = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_10PNG')
+
 
 end2 = Instant.now()
 
@@ -151,7 +170,7 @@ seconds = (Duration.between(start2, end2).toMillis() / 1000)
 
 KeywordUtil.logInfo("⏱️ Waktu submit order : $seconds detik")
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_11PNG')
 
 def client = new TcpClient()
 
@@ -182,21 +201,21 @@ seconds = (Duration.between(start1, end1).toMillis() / 1000)
 
 KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Orderlist3.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_11PNG')
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERE.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_12PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERF.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/TN_BUY2_13PNG')
 
 KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses, side)
+    lotAmount, orderPrice, expectedStatuses, side,expectedBoardID)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')

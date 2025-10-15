@@ -27,10 +27,10 @@ import com.utilities.TradingHours as TradingHours
 import com.utilities.OrderVerification as OrderVerification
 import java.math.BigDecimal as BigDecimal
 
-// Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
-String clientID = '1B029' // Ditambahkan: ID Klien
 
-String stockCode = 'ACES' // Ditambahkan: Sesuaikan dengan saham yang di-order
+String clientID = '1B029' 
+
+String stockCode = 'ACES' 
 
 BigDecimal orderPrice = new BigDecimal('57')
 
