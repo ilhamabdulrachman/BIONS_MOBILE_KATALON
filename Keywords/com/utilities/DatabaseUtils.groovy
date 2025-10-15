@@ -6,6 +6,7 @@ import java.sql.ResultSet
 import com.kms.katalon.core.util.KeywordUtil
 import java.math.BigDecimal
 import java.util.List
+import com.kms.katalon.core.annotation.Keyword // Pastikan import Keyword benar
 
 class OrderVerification {
 
@@ -23,7 +24,7 @@ class OrderVerification {
 	private static final String DB_PASS_ALT = "sysdev"
 
 	/**
-	 * Menerjemahkan kode CRO_STATUS 
+	 * Menerjemahkan kode CRO_STATUS
 	 */
 	private static String getCriteriaStatusDescription(String statusCode) {
 		//  status untuk TB_FO_CRITERIAORDER
@@ -99,9 +100,9 @@ class OrderVerification {
 			case 'CR':
 				return 'CONFIRMED'
 			case 'RQ':
-				return 'PROCCESING' 
+				return 'PROCCESING'
 			case 'RJ':
-				return 'REJECT'
+			return 'REJECT'
 			default:
 				return "Unknown Status (${statusCode})"
 		}
@@ -109,7 +110,7 @@ class OrderVerification {
 
 	/**
 	 * [FUNGSI UTAMA UNTUK KRITERIA/AUTO ORDER]
-	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan 
+	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan
 	 * order BUKAN order yang terkirim di TB_FO_ORDER.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
@@ -216,13 +217,21 @@ class OrderVerification {
 	/**
 	 * [FUNGSI BARU UNTUK REGULAR ORDER]
 	 * Memverifikasi data order terbaru di TB_FO_ORDER (Order Transaksi Langsung).
-	 * Telah disempurnakan untuk menerima List Status dan parameter Side.
+	 * Telah disempurnakan untuk menerima List Status, parameter Side, dan List Tipe Board.
+	 * * @param clientCode ID Klien
+	 * @param expectedStockCode Kode Saham
+	 * @param expectedLot Jumlah Lot
+	 * @param expectedPrice Harga Order
+	 * @param expectedStatuses List Status yang Diharapkan
+	 * @param expectedSide Tipe Transaksi ('B' atau 'S')
+	 * @param expectedBoardIDs List Tipe Board (misalnya ['RG', 'TN'])
 	 */
 	@com.kms.katalon.core.annotation.Keyword
-	static boolean verifyLatestRegularOrder(String clientCode, String expectedStockCode, int expectedLot, BigDecimal expectedPrice, List<String> expectedStatuses, String expectedSide) {
+	static boolean verifyLatestRegularOrder(String clientCode, String expectedStockCode, int expectedLot, BigDecimal expectedPrice, List<String> expectedStatuses, String expectedSide, List<String> expectedBoardID) {
 		Connection conn = null
 		ResultSet rsOrder = null
-
+		
+		// --- 1. Persiapan Data Ekspektasi ---
 		// Konversi Side (B/S) menjadi kode DB (1/2)
 		String dbSideCode
 		if (expectedSide.equalsIgnoreCase('B')) {
@@ -233,9 +242,10 @@ class OrderVerification {
 			KeywordUtil.markFailed("❌ Tipe transaksi tidak valid: Harus 'B' (Buy) atau 'S' (Sell). Diterima: ${expectedSide}")
 			return false
 		}
-
+		
 		// Query: Memeriksa data terbaru di TB_FO_ORDER
-		// DITAMBAHKAN filter ORD_SIDE
+		// DITAMBAHKAN kolom BRD_ID di SELECT
+		// CATATAN: QUERY TETAP DIBIARKAN AGAR TIDAK MENGGUNAKAN 'IN' KARENA BATASAN ORACLE/DRIVER.
 		String sqlOrder = """
 			SELECT * FROM (
 				SELECT * FROM BNISFIX.TB_FO_ORDER
@@ -250,7 +260,7 @@ class OrderVerification {
 			// Menggunakan koneksi UTAMA (bnisfix)
 			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
 
-			def pstmtOrder = conn.prepareStatement(sqlOrder.trim()) // FIX: Tambah .trim()
+			def pstmtOrder = conn.prepareStatement(sqlOrder.trim())
 			pstmtOrder.setString(1, clientCode)
 			pstmtOrder.setString(2, dbSideCode) // Binding kode SIDE
 
@@ -259,16 +269,17 @@ class OrderVerification {
 			if (rsOrder.next()) {
 				// Ambil Data Utama dari TB_FO_ORDER
 				String actualOrderId = rsOrder.getString("ORD_ID")
-				String actualStockCode = rsOrder.getString("SEC_ID") // Asumsi: Kolom saham di TB_FO_ORDER
-				int actualLot = rsOrder.getInt("ORD_LOT") // Asumsi: Kolom lot di TB_FO_ORDER
-				BigDecimal actualPrice = rsOrder.getBigDecimal("ORD_PRICE") // Asumsi: Kolom harga di TB_FO_ORDER
-				String rawStatus = rsOrder.getString("ORS_ID") // Asumsi: Kolom status di TB_FO_ORDER
-				String actualSideRaw = rsOrder.getString("ORD_SIDE") // Ambil data side
+				String actualStockCode = rsOrder.getString("SEC_ID")
+				int actualLot = rsOrder.getInt("ORD_LOT")
+				BigDecimal actualPrice = rsOrder.getBigDecimal("ORD_PRICE")
+				String rawStatus = rsOrder.getString("ORS_ID")
+				String actualSideRaw = rsOrder.getString("ORD_SIDE")
+				
+				// --- BARU: Ambil kolom BRD_ID ---
+				String actualBoardID = rsOrder.getString("BRD_ID")
 
 				// --- Tambahkan kolom Reject Date/Description ---
-				// ORS_REJECTDT (Reject Date Time)
 				String actualRejectDate = rsOrder.getString("ORS_REJECTDT")
-				// Kolom ORS_REJECTDESC menyimpan deskripsi alasan reject (Diperbarui)
 				String actualRejectReason = rsOrder.getString("ORS_REJECTDESC")
 
 				String actualStatus = getOrderStatusDescription(rawStatus)
@@ -278,14 +289,16 @@ class OrderVerification {
 				boolean stockMatch = actualStockCode.equalsIgnoreCase(expectedStockCode)
 				boolean lotMatch = actualLot == expectedLot
 				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
-				boolean sideMatch = actualSideRaw.equals(dbSideCode) // Verifikasi kode side (1 atau 2)
-
-				// Verifikasi status order: cek apakah status aktual ada di dalam List status yang diekspektasi
+				boolean sideMatch = actualSideRaw.equals(dbSideCode)
 				boolean statusMatch = expectedStatuses.contains(actualStatus)
+				
+				// --- DIPERBAIKI: Logika Pencocokan Board ID (Cek apakah actual ada dalam List) ---
+				boolean boardIDMatch = actualBoardID != null && expectedBoardID.contains(actualBoardID.toUpperCase())
 
-				if (stockMatch && lotMatch && priceMatch && statusMatch && sideMatch) {
-					KeywordUtil.logInfo("✅ Verifikasi DB Order Transaksi Berhasil.")
-					KeywordUtil.logInfo("	[Detail Order]: ID: ${actualOrderId}, Side: ${actualSide}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
+
+				if (stockMatch && lotMatch && priceMatch && statusMatch && sideMatch && boardIDMatch) {
+					KeywordUtil.logInfo("✅ Verifikasi DB Order Transaksi Berhasil (Termasuk BRD_ID).")
+					KeywordUtil.logInfo("	[Detail Order]: ID: ${actualOrderId}, Side: ${actualSide}, Board ID: ${actualBoardID}, Status: ${actualStatus}, Saham: ${actualStockCode}, Lot: ${actualLot}, Harga: ${actualPrice}")
 					// Log info Reject (Tanggal dan Alasan)
 					KeywordUtil.logInfo("	[Reject Info]: Tanggal (ORS_REJECTDT): ${actualRejectDate}, Alasan (ORS_REJECTDESC): ${actualRejectReason}")
 					return true
@@ -297,7 +310,8 @@ class OrderVerification {
 					KeywordUtil.logError("	Ekspektasi Harga: ${expectedPrice}, Aktual: ${actualPrice}")
 					KeywordUtil.logError("	Ekspektasi Side: ${expectedSide} (DB: ${dbSideCode}), Aktual: ${actualSide}")
 					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus})")
-					// Log error Reject (Tanggal dan Alasan)
+					// --- DIPERBAIKI: Log Error BRD_ID ---
+					KeywordUtil.logError("	Ekspektasi Board ID (List): ${expectedBoardID}, Aktual: ${actualBoardID}")
 					KeywordUtil.logError("	[Reject Info]: Tanggal (ORS_REJECTDT): ${actualRejectDate}, Alasan (ORS_REJECTDESC): ${actualRejectReason}")
 					return false
 				}
@@ -365,10 +379,10 @@ class OrderVerification {
 				boolean bondCodeMatch = actualBondCode.equalsIgnoreCase(expectedBondCode)
 				boolean nominalMatch = actualNominal.compareTo(expectedNominal) == 0
 				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
-				
+
 				// Verifikasi status order: cek apakah status aktual ada di dalam List status yang diekspektasi
 				boolean statusMatch = expectedStatuses.contains(actualStatus)
-				
+
 				if (bondCodeMatch && nominalMatch && priceMatch && statusMatch) {
 					KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi Berhasil (CODE, NOMINAL, PRICE, STATUS).")
 					KeywordUtil.logInfo("	[Detail Bond]: ID: ${actualTransactionId}, Bond: ${actualBondCode}, Nominal: ${actualNominal}, Price: ${actualPrice}, Status: ${actualStatus} (Raw: ${rawStatus})")
