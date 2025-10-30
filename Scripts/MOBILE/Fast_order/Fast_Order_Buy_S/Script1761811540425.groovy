@@ -45,8 +45,7 @@ List<String> expectedBoardID = ['RG']
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
-        )
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...')
 } else {
     boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
 
@@ -132,6 +131,10 @@ Mobile.tap(findTestObject('Fast_Order_Buy/change_fast_order1'), 0)
 Mobile.setText(findTestObject('Fast_Order_Buy/enter_stock_name'), 'KICI', 0)
 
 Mobile.tap(findTestObject('Fast_Order_Buy/Tap_stock_fast'), 0)
+
+Mobile.tap(findTestObject('Fast_Order_Buy/ACC_TYPE'), 0)
+
+Mobile.tap(findTestObject('Fast_Order_Buy/Syariah_fast_order'), 0)
 
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 

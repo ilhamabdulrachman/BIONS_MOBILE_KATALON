@@ -29,13 +29,13 @@ import java.math.BigDecimal as BigDecimal
 
 String clientID = '1B029'
 
-String stockCode = 'KICI'
+String stockCode = 'ACES'
 
-BigDecimal orderPrice = new BigDecimal('412')
+BigDecimal orderPrice = new BigDecimal('73')
 
 int lotAmount = 1
 
-String side = 'B'
+String side = 'S'
 
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
@@ -129,7 +129,7 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.tap(findTestObject('Fast_Order_Buy/change_fast_order1'), 0)
 
-Mobile.setText(findTestObject('Fast_Order_Buy/enter_stock_name'), 'KICI', 0)
+Mobile.setText(findTestObject('Fast_Order_Buy/enter_stock_name'), 'ACES', 0)
 
 Mobile.tap(findTestObject('Fast_Order_Buy/Tap_stock_fast'), 0)
 

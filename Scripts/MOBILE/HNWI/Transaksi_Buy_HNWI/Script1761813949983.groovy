@@ -34,9 +34,9 @@ String clientID = '1B029'
 
 String stockCode = 'APLN'
 
-BigDecimal orderPrice = new BigDecimal('175')
+BigDecimal orderPrice = new BigDecimal('189')
 
-int lotAmount = 3
+int lotAmount = 5000
 
 String side = 'B'
 
@@ -46,21 +46,18 @@ List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdra
 List<String> expectedBoardID = ['RG']
 
 // --- Verifikasi Jam Bursa ---
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
-
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
-        )
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
-
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
-
+//boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+//if (isMarketOpen) {
+//	KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
+//		)
+//} else {
+//	boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//	if (isMarketBreak) {
+//		KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//	} else {
+//		KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//	}
+//}
 String applicationID = 'id.bions.bnis.android.v2'
 
 try {
@@ -75,8 +72,7 @@ catch (Exception e) {
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
-    )
+Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
@@ -113,6 +109,12 @@ Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 
+Mobile.setText(findTestObject('HNWI/split_order - 0'), '2', 0)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.tap(findTestObject('HNWI/button_HNWI'), 0)
+
 //Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
 
@@ -121,7 +123,7 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 start = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
+Mobile.tap(findTestObject('HNWI/CONFIRM_HNWI'), 0)
 
 end = Instant.now()
 
@@ -129,17 +131,6 @@ seconds = (Duration.between(start, end).toMillis() / 1000)
 
 KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman form buy : $seconds detik")
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERC.PNG')
-
-start2 = Instant.now()
-
-Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
-
-end2 = Instant.now()
-
-seconds = (Duration.between(start2, end2).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu submit order : $seconds detik")
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
 
@@ -147,7 +138,7 @@ def client = new TcpClient()
 
 client.connect('REDACTED_INTERNAL_IP', 62229)
 
-// Kirim login - Menggunakan clientID dari variabel 
+// Kirim login - Menggunakan clientID dari variabel
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
 
 // Listen 5 detik untuk capture response login

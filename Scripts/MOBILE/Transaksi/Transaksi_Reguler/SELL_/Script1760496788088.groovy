@@ -26,15 +26,16 @@ import java.time.Duration as Duration
 import com.utilities.TradingHours as TradingHours
 import com.utilities.OrderVerification as OrderVerification
 import java.math.BigDecimal as BigDecimal
+import java.util.ArrayList
+import java.util.Map
 
-// Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
 String clientID = '1B029' // Ditambahkan: ID Klien
 
-String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
+String stockCode = 'APLN' 
 
 BigDecimal orderPrice = new BigDecimal('176')
 
-int lotAmount = 1 // Ditambahkan: Sesuaikan dengan lot yang di-order
+int lotAmount = 1 
 
 String side = 'S'
 
