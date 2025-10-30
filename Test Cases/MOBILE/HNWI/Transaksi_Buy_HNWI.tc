@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Transaksi_Buy_HNWI</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>182300ee-b124-417e-9e8e-c6d57b28101a</testCaseGuid>
+</TestCaseEntity>

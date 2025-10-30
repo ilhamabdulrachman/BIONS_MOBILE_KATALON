@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Fast_Order_Sell</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>081da006-119c-400d-965e-7e8ce12cf3bf</testCaseGuid>
+</TestCaseEntity>

@@ -26,20 +26,23 @@ import java.time.Duration as Duration
 import com.utilities.TradingHours as TradingHours
 import com.utilities.OrderVerification as OrderVerification
 import java.math.BigDecimal as BigDecimal
+import java.util.ArrayList as ArrayList
+import java.util.Map as Map
 
 // Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
-String clientID = '1B029' // Ditambahkan: ID Klien
+String clientID = '1B029'
 
-String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
+String stockCode = 'APLN'
 
 BigDecimal orderPrice = new BigDecimal('175')
 
-int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
+int lotAmount = 3
 
 String side = 'B'
 
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
+
 List<String> expectedBoardID = ['RG']
 
 // --- Verifikasi Jam Bursa ---
@@ -183,7 +186,7 @@ KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses, side,expectedBoardID)
+    lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
