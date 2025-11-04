@@ -29,30 +29,37 @@ import java.math.BigDecimal as BigDecimal
 import java.util.ArrayList as ArrayList
 import java.util.Map as Map
 
-
 String clientID = '1B029'
+
 String stockCode = 'APLN'
-BigDecimal orderPrice = new BigDecimal('189')
-//int lotAmount = 5000        
-String side = 'B'
+
+BigDecimal orderPrice = new BigDecimal('175')
+
+int lotAmount = 1
+
+String side = 'S'
+
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
+
 List<String> expectedBoardID = ['RG']
 
-int splitAmount = 2
-
-
+// --- Verifikasi Jam Bursa ---
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...')
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
+        )
 } else {
     boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+
     if (isMarketBreak) {
         KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
     } else {
         KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
     }
 }
+
 String applicationID = 'id.bions.bnis.android.v2'
 
 try {
@@ -67,7 +74,8 @@ catch (Exception e) {
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
+    )
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
@@ -89,76 +97,116 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
+//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
+start2 = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
+Mobile.tap(findTestObject('AMEND/orderlist'), 0)
 
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), stockCode, 0)
+end2 = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu masuk Orderlist : $seconds detik")
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND.PNG')
+
+Mobile.delay(6, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND1.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND2.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND3.PNG')
+
+start3 = Instant.now()
+
+Mobile.tap(findTestObject('AMEND/Amend'), 0)
+
+end3 = Instant.now()
+
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu form Amend : $seconds detik")
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND4.PNG')
 
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.setText(findTestObject('HNWI/split_order - 0'), splitAmount.toString(), 0) 
+Mobile.tap(findTestObject('AMEND/amend_sel'), 0)
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND5.PNG')
 
-Mobile.tap(findTestObject('HNWI/button_HNWI'), 0)
+start4 = Instant.now()
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
+Mobile.tap(findTestObject('AMEND/confirm_submit_sell'), 0)
 
-start = Instant.now()
+end4 = Instant.now()
 
-Mobile.tap(findTestObject('HNWI/CONFIRM_HNWI'), 0)
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
 
-end = Instant.now()
+KeywordUtil.logInfo("⏱️ Waktu klik submit : $seconds detik")
 
-seconds = (Duration.between(start, end).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu kirim split order sampai konfirmasi: $seconds detik")
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
-
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND5.PNG')
 
 def client = new TcpClient()
+
 client.connect('192.168.19.61', 62229)
+
+// Kirim login - Menggunakan clientID dari variabel
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
+
+// Listen 5 detik untuk capture response login
 client.listen(5)
+
+// Kirim subscribe order - Menggunakan clientID dari variabel
 client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"${clientID}\"}")
-KeywordUtil.logInfo("Menunggu ${splitAmount} respon order melalui FIX/Trading Engine...")
-client.listen(15) 
+
+// Listen 10 detik untuk capture response order
+client.listen(5)
+
+// Tutup koneksi
 client.close()
 
-start1 = Instant.now()
-Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
-end1 = Instant.now()
-seconds = (Duration.between(start1, end1).toMillis() / 1000)
-KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
+start5 = Instant.now()
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Orderlist3.PNG')
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+Mobile.tap(findTestObject('AMEND/view_orderlist_amend'), 0)
+
+end4 = Instant.now()
+
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu klik View orderlist : $seconds detik")
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERE.PNG')
+
 Mobile.swipe(500, 1500, 500, 500)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERF.PNG')
 
-KeywordUtil.logInfo("Memulai verifikasi database untuk ${splitAmount} entry order client ID $clientID...")
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestVariedSplitOrders'(
-    clientID, 
-    stockCode, 
-    orderPrice, 
-    expectedStatuses, 
-    side, 
-    expectedBoardID
-)
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND6.PNG')
+
+boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
+    lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
 
 if (dbVerificationResult) {
-    KeywordUtil.logInfo("✅ KESIMPULAN: Seluruh ${splitAmount} entry Split Order (dengan lot bervariasi) berhasil dikirim dan diverifikasi di Database Oracle.")
+    KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
 } else {
-    KeywordUtil.logError('❌ KESIMPULAN: Ketidaksesuaian data order ditemukan di database untuk skenario lot bervariasi.')
+    KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
 }
 
 Mobile.closeApplication()
+

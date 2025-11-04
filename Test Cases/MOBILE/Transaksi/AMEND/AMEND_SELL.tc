@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>AMEND_SELL</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>daf4bf0e-3e29-4f7c-9848-b1ea8ec47ffa</testCaseGuid>
+</TestCaseEntity>

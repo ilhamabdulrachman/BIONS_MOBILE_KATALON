@@ -106,7 +106,7 @@ class OrderVerification {
 				return "Unknown Status (${statusCode})"
 		}
 	}
-
+	
 	/**
 	 * [FUNGSI UTAMA UNTUK KRITERIA/AUTO ORDER]
 	 * Memverifikasi data auto order terbaru di TB_FO_CRITERIAORDER dan memastikan
@@ -132,7 +132,7 @@ class OrderVerification {
 			SELECT * FROM (
 				SELECT * FROM BNISFIX.TB_FO_ORDER
 				WHERE CLS_INITIALCODE = ?
-				ORDER BY ORDER_TIME DESC 
+				ORDER BY ORDER_TIME DESC 
 			) WHERE ROWNUM <= 1
 		"""
 
@@ -299,6 +299,117 @@ class OrderVerification {
 		}
 	}
 
+	/**
+	 * [FUNGSI BARU UNTUK VARIED SPLIT ORDER]
+	 * Memverifikasi N order terbaru, memastikan setiap order memiliki lot yang berbeda
+	 * sesuai dengan urutan yang diekspektasikan dalam List<Integer> expectedSplitLots.
+	 */
+	@com.kms.katalon.core.annotation.Keyword
+	static boolean verifyLatestVariedSplitOrders(String clientCode, String expectedStockCode, List<Integer> expectedSplitLots,
+												BigDecimal expectedPrice, List<String> expectedStatuses, String expectedSide,
+												List<String> expectedBoardID) {
+		Connection conn = null
+		ResultSet rsOrders = null
+		boolean overallResult = true
+		
+		int expectedSplitCount = expectedSplitLots.size()
+		KeywordUtil.logInfo("Memulai Verifikasi Split Order Bervariasi. Ekspektasi ${expectedSplitCount} order terbaru (Lot: ${expectedSplitLots}) untuk client: ${clientCode}")
+
+		String dbSideCode
+		if (expectedSide.equalsIgnoreCase('B')) {
+			dbSideCode = '1'
+		} else if (expectedSide.equalsIgnoreCase('S')) {
+			dbSideCode = '2'
+		} else {
+			KeywordUtil.markFailed("❌ Tipe transaksi tidak valid: Harus 'B' (Buy) atau 'S' (Sell). Diterima: ${expectedSide}")
+			return false
+		}
+		
+		// Query untuk mengambil N order terbaru berdasarkan waktu request entry (ORS_REQENTDT)
+		String sqlMultipleOrdersRowNum = """
+			SELECT * FROM (
+				SELECT ORD_ID, SEC_ID, ORD_LOT, ORD_PRICE, ORD_SIDE, ORS_ID, BRD_ID FROM BNISFIX.TB_FO_ORDER
+				WHERE CLS_INITIALCODE = ? AND ORD_SIDE = ?
+				ORDER BY ORS_REQENTDT DESC
+			) WHERE ROWNUM <= ?
+		"""
+		
+		List<Map> actualOrders = new ArrayList<Map>()
+
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+
+			// --- 1. FETCH DATA AKTUAL DARI DB ---
+			def pstmtOrders = conn.prepareStatement(sqlMultipleOrdersRowNum.trim())
+			pstmtOrders.setString(1, clientCode)
+			pstmtOrders.setString(2, dbSideCode)
+			pstmtOrders.setInt(3, expectedSplitCount) // Ambil jumlah record sesuai jumlah split
+
+			rsOrders = pstmtOrders.executeQuery()
+
+			while (rsOrders.next()) {
+				String rawSide = rsOrders.getString("ORD_SIDE")
+				String side = rawSide == '1' ? 'BUY' : (rawSide == '2' ? 'SELL' : rawSide)
+
+				actualOrders.add([
+					ordId: rsOrders.getString("ORD_ID"),
+					stockCode: rsOrders.getString("SEC_ID"),
+					lotAmount: rsOrders.getInt("ORD_LOT"),
+					price: rsOrders.getBigDecimal("ORD_PRICE"),
+					rawStatus: rsOrders.getString("ORS_ID"),
+					boardID: rsOrders.getString("BRD_ID")?.toUpperCase(),
+					side: side
+				])
+			}
+			
+			// --- 2. VALIDASI JUMLAH DATA ---
+			if (actualOrders.size() != expectedSplitCount) {
+				KeywordUtil.markFailed("❌ Verifikasi GAGAL: Hanya ditemukan ${actualOrders.size()} order, tetapi diekspektasikan ${expectedSplitCount} order. Order mungkin belum masuk/terkirim.")
+				return false
+			}
+
+			// --- 3. LOOP VERIFIKASI (Mencocokkan urutan Lot) ---
+			for (int i = 0; i < expectedSplitCount; i++) {
+				Map actual = actualOrders.get(i)
+				int expectedLot = expectedSplitLots.get(i) // Lot yang bervariasi
+				
+				String actualStatusDesc = getOrderStatusDescription(actual.rawStatus)
+
+				// --- Perbandingan Data ---
+				boolean stockMatch = actual.stockCode.equalsIgnoreCase(expectedStockCode)
+				boolean lotMatch = actual.lotAmount == expectedLot // Cek Lot yang Bervariasi
+				boolean priceMatch = actual.price.compareTo(expectedPrice) == 0
+				boolean sideMatch = actual.side.equalsIgnoreCase(expectedSide)
+				boolean statusMatch = expectedStatuses.contains(actualStatusDesc)
+				boolean boardIDMatch = actual.boardID != null && expectedBoardID.contains(actual.boardID)
+
+				if (stockMatch && lotMatch && priceMatch && sideMatch && statusMatch && boardIDMatch) {
+					KeywordUtil.logInfo("	✅ Order #${i + 1} Berhasil (ID: ${actual.ordId}). Lot: ${actual.lotAmount} (Ekspektasi: ${expectedLot}), Status: ${actualStatusDesc}")
+				} else {
+					KeywordUtil.markFailed("❌ Order #${i + 1} GAGAL. Detail tidak cocok.")
+					KeywordUtil.logError("	Ekspektasi Lot: ${expectedLot}, Aktual: ${actual.lotAmount}")
+					KeywordUtil.logError("	Ekspektasi Harga: ${expectedPrice}, Aktual: ${actual.price}")
+					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatusDesc}")
+					overallResult = false
+				}
+			}
+			
+			if (overallResult) {
+				KeywordUtil.logInfo("🎉 Verifikasi DB Varied Split Order Berhasil! Semua ${expectedSplitCount} order terverifikasi dengan lot yang berbeda.")
+			}
+			
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada Split Order. Pesan Error: " + e.getMessage())
+			overallResult = false
+		} finally {
+			if (rsOrders != null) rsOrders.close()
+			if (conn != null) conn.close()
+		}
+
+		return overallResult
+	}
+
 
 	@com.kms.katalon.core.annotation.Keyword
 	static boolean verifyMultipleOrders(List<Map> expectedOrders, String clientCode) {
@@ -315,14 +426,6 @@ class OrderVerification {
 		KeywordUtil.logInfo("Proses Verifikasi Multiple Order dimulai. Ekspektasi ${ordersToFetch} order terbaru untuk client: ${clientCode}")
 
 		// Query untuk mengambil N order terbaru, diurutkan berdasarkan waktu request entry (ORS_REQENTDT)
-		String sqlMultipleOrders = """
-			SELECT ORD_ID, SEC_ID, ORD_LOT, ORD_PRICE, ORD_SIDE, ORS_ID, BRD_ID, ORS_REJECTDT, ORS_REJECTDESC FROM BNISFIX.TB_FO_ORDER
-			WHERE CLS_INITIALCODE = ?
-			ORDER BY ORS_REQENTDT DESC
-			FETCH FIRST ? ROWS ONLY
-		"""
-		// NOTE: FETCH FIRST N ROWS ONLY adalah standar SQL modern, ROWNUM <= N juga bisa digunakan
-		// Disesuaikan kembali dengan ROWNUM agar kompatibel dengan Oracle versi lama yang mungkin digunakan.
 		String sqlMultipleOrdersRowNum = """
 			SELECT * FROM (
 				SELECT ORD_ID, SEC_ID, ORD_LOT, ORD_PRICE, ORD_SIDE, ORS_ID, BRD_ID, ORS_REJECTDT, ORS_REJECTDESC FROM BNISFIX.TB_FO_ORDER
@@ -384,7 +487,6 @@ class OrderVerification {
 				Map expected = expectedOrders.get(i)
 				KeywordUtil.logInfo("Memverifikasi Order Ekspektasi #${i + 1}: Saham ${expected.stockCode}, Side ${expected.side}, Lot ${expected.lotAmount}")
 
-				// Ambil dan konversi ekspektasi
 				String expectedStockCode = expected.get("stockCode")?.toString()
 				String expectedSide = expected.get("side")?.toString()?.toUpperCase()
 				// Konversi ke tipe yang tepat (int atau BigDecimal) dan penanganan null
@@ -402,47 +504,38 @@ class OrderVerification {
 					continue
 				}
 
-				// Coba cari kecocokan di data aktual
 				int matchIndex = -1
 
 				for (int j = 0; j < actualOrders.size(); j++) {
 					Map actual = actualOrders.get(j)
 
-					// Lewati order aktual yang sudah dicocokkan (matched: true)
 					if (actual.matched) continue
 
-						// Cek semua kriteria
 						boolean stockMatch = actual.stockCode.equalsIgnoreCase(expectedStockCode)
 					boolean lotMatch = actual.lotAmount == expectedLot
 					boolean priceMatch = actual.price.compareTo(expectedPrice) == 0
 					boolean sideMatch = actual.side.equalsIgnoreCase(expectedSide)
 
-					// Cek status: actual status description harus ada di list expected statuses
 					boolean statusMatch = actual.statusDesc != null && expectedStatuses.contains(actual.statusDesc)
 
-					// Cek Board ID: actual board ID harus ada di list expected board IDs
 					boolean boardIDMatch = actual.boardID != null && expectedBoardIDs.contains(actual.boardID)
 
 					if (stockMatch && lotMatch && priceMatch && sideMatch && statusMatch && boardIDMatch) {
-						matchIndex = j // Kecocokan ditemukan
+						matchIndex = j 
 
-						// Tandai order aktual ini sudah dicocokkan agar tidak dipakai lagi
 						actual.matched = true
 						KeywordUtil.logInfo("	✅ Match Berhasil dengan Order DB ID: ${actual.ordId}, Status: ${actual.statusDesc}, Board: ${actual.boardID}")
 						break
 					}
 				}
 
-				// Jika setelah looping tidak ada kecocokan
 				if (matchIndex == -1) {
 					KeywordUtil.markFailed("❌ Verifikasi Order #${i + 1} GAGAL: Tidak ada order aktual yang cocok dengan ekspektasi.")
 					KeywordUtil.logError("	Ekspektasi: Saham: ${expectedStockCode}, Side: ${expectedSide}, Lot: ${expectedLot}, Harga: ${expectedPrice}, Status: ${expectedStatuses}, Board: ${expectedBoardIDs}")
 					overallResult = false
-					// Lanjutkan ke order berikutnya, tetapi hasil akhir akan false
 				}
 			}
 
-			// Log hasil akhir
 			if (overallResult) {
 				KeywordUtil.logInfo("🎉 Verifikasi DB Multiple Order Berhasil! Semua ${ordersToFetch} order cocok dengan data aktual.")
 			}
@@ -457,6 +550,28 @@ class OrderVerification {
 		return overallResult
 	}
 
+	@com.kms.katalon.core.annotation.Keyword
+	static List<Integer> calculateEqualSplitLots(int totalLot, int splitCount) {
+		if (splitCount <= 0 || totalLot <= 0) {
+			KeywordUtil.logError("Lot atau Split Count tidak valid.")
+			return new ArrayList<Integer>()
+		}
+
+		List<Integer> splitLots = new ArrayList<Integer>()
+		int baseLot = totalLot / splitCount 
+		int remainder = totalLot % splitCount 
+
+		for (int i = 0; i < splitCount; i++) {
+			int currentLot = baseLot
+			if (i < remainder) {
+				currentLot += 1
+			}
+			splitLots.add(currentLot)
+		}
+		return splitLots
+	}
+
+
 	/**
 	 * [FUNGSI UTAMA UNTUK BOND TRANSACTION]
 	 * Memverifikasi data transaksi Obligasi/Bond terbaru di TB_FO_BONDTRANSACTION.
@@ -467,10 +582,9 @@ class OrderVerification {
 		Connection conn = null
 		ResultSet rsBond = null
 
-		// Query: Memeriksa data terbaru di TB_FO_BONDTRANSACTION
 		String sqlBond = """
 			SELECT * FROM (
-				SELECT * FROM BNISFO.TB_FO_BONDTRANSACTION 
+				SELECT * FROM BNISFO.TB_FO_BONDTRANSACTION 
 				WHERE USR_ID = ?
 				ORDER BY TRXDATE DESC
 			) WHERE ROWNUM <= 1
@@ -479,7 +593,6 @@ class OrderVerification {
 		try {
 			Class.forName(DB_DRIVER)
 
-			// PERBAIKAN: Menggunakan koneksi ALTERNATIF (bnisfo) karena query mengakses skema BNISFO.
 			conn = DriverManager.getConnection(DB_URL_ALT, DB_USER_ALT, DB_PASS_ALT)
 
 			def pstmtBond = conn.prepareStatement(sqlBond.trim())

@@ -29,7 +29,6 @@ import java.math.BigDecimal as BigDecimal
 import java.util.ArrayList as ArrayList
 import java.util.Map as Map
 
-// Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
 String clientID = '1B029'
 
 String stockCode = 'APLN'
