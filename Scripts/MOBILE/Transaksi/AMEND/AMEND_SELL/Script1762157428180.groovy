@@ -35,9 +35,9 @@ String stockCode = 'APLN'
 
 BigDecimal orderPrice = new BigDecimal('175')
 
-int lotAmount = 3
+int lotAmount = 1
 
-String side = 'B'
+String side = 'S'
 
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
@@ -102,51 +102,67 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
-
-Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
-
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), 'APLN', 0)
-
-Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
-
-Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
-
-//Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
-
-//Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERB.PNG')
-
-start = Instant.now()
-
-Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
-
-end = Instant.now()
-
-seconds = (Duration.between(start, end).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman form buy : $seconds detik")
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERC.PNG')
-
 start2 = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
+Mobile.tap(findTestObject('AMEND/orderlist'), 0)
 
 end2 = Instant.now()
 
 seconds = (Duration.between(start2, end2).toMillis() / 1000)
 
-KeywordUtil.logInfo("⏱️ Waktu submit order : $seconds detik")
+KeywordUtil.logInfo("⏱️ Waktu masuk Orderlist : $seconds detik")
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND.PNG')
+
+Mobile.delay(6, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND1.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND2.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND3.PNG')
+
+start3 = Instant.now()
+
+Mobile.tap(findTestObject('AMEND/Amend'), 0)
+
+end3 = Instant.now()
+
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu form Amend : $seconds detik")
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND4.PNG')
+
+Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.tap(findTestObject('AMEND/amend_sel'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND5.PNG')
+
+start4 = Instant.now()
+
+Mobile.tap(findTestObject('AMEND/confirm_submit_sell'), 0)
+
+end4 = Instant.now()
+
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
+
+KeywordUtil.logInfo("⏱️ Waktu klik submit : $seconds detik")
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND5.PNG')
 
 def client = new TcpClient()
 
 client.connect('REDACTED_INTERNAL_IP', 62229)
 
-// Kirim login - Menggunakan clientID dari variabel 
+// Kirim login - Menggunakan clientID dari variabel
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
 
 // Listen 5 detik untuk capture response login
@@ -156,34 +172,33 @@ client.listen(5)
 client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"${clientID}\"}")
 
 // Listen 10 detik untuk capture response order
-client.listen(10)
+client.listen(5)
 
 // Tutup koneksi
 client.close()
 
-start1 = Instant.now()
+start5 = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
+Mobile.tap(findTestObject('AMEND/view_orderlist_amend'), 0)
 
-end1 = Instant.now()
+end4 = Instant.now()
 
-seconds = (Duration.between(start1, end1).toMillis() / 1000)
+seconds = (Duration.between(start2, end2).toMillis() / 1000)
 
-KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
+KeywordUtil.logInfo("⏱️ Waktu klik View orderlist : $seconds detik")
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Orderlist3.PNG')
-
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERE.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERF.PNG')
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
+Mobile.swipe(500, 1500, 500, 500)
 
-// *** Panggilan Verifikasi TB_FO_ORDER ***
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/AMEND6.PNG')
+
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
     lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
 

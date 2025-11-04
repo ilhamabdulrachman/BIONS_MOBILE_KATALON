@@ -121,11 +121,11 @@ Mobile.delay(1, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('Fast_Order_Buy/Klik_more'), 1)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder1.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder21.PNG')
 
 Mobile.tap(findTestObject('Fast_Order_Buy/Klik_fastorder'), 0)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder2.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder22.PNG')
 
 Mobile.tap(findTestObject('Fast_Order_Buy/change_fast_order1'), 0)
 
@@ -137,21 +137,23 @@ Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.tap(findTestObject('Fast_Order_Buy/checkbox fastorder1'), 0)
 
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder23.PNG')
+
 Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder4.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder24.PNG')
 
 Mobile.tap(findTestObject('Fast_Order_Buy/confirm and submit fast order'), 0)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder5.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder25.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder6.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder26.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder7.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Fastorder27.PNG')
 
 KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
 

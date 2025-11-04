@@ -46,9 +46,9 @@ Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
 Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN22', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN33', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PASSWORD', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
