@@ -17,7 +17,7 @@ import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
 import com.utilities.TcpClient as TcpClient
-import com.kms.katalon.core.util.KeywordUtil
+import com.kms.katalon.core.util.KeywordUtil as KeywordUtil
 
 //def elemenDashboard = findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR')
 //NetworkChecker.verifyInternetConnection()
@@ -72,4 +72,6 @@ Mobile.swipe(500, 1500, 500, 500)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenu2.PNG')
 
 Mobile.closeApplication()
+
+Mobile.tap(findTestObject(null), 0)
 

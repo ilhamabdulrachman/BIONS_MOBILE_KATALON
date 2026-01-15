@@ -27,6 +27,8 @@ import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
 
+
+
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
@@ -61,9 +63,9 @@ catch (Exception e) {
 //Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN22', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PASSWORD', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN33', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -78,9 +80,12 @@ TcpClient client = new TcpClient()
 //client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.connect('REDACTED_PROD_HOST', 62229 // FEED_SERVER_1
   )
+  
+//  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
+ // )
 // Kirim login
 //client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-client.sendMessage('{ "action":"login", "user":"REDACTED_USERID", "password":"REDACTED_PIN22" }')
+client.sendMessage('{ "action":"login", "user":"23ON49682", "password":"tes123" }')
 // Listen 5 detik untuk capture response login
 client.listen(5)
 // 🔌 Tutup koneksi
