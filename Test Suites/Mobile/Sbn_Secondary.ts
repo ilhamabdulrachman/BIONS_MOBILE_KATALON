@@ -15,7 +15,7 @@
       <guid>bf774b09-41b7-4988-a7a3-4f14e2466d18</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Sbn_Secondary_Buy/Buy_</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Sbn_Secondary_/Buy_</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

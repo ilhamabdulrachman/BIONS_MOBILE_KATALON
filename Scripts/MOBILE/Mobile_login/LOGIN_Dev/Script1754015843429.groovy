@@ -44,7 +44,7 @@ if (isMarketOpen) {
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', false)
+Mobile.startExistingApplication('id.bions.bnis.android.v2', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 

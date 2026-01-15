@@ -28,31 +28,35 @@ import com.utilities.OrderVerification as OrderVerification
 import java.math.BigDecimal as BigDecimal
 
 // Catatan: Nilai ini harus SAMA dengan data yang diinputkan/default di UI
-String clientID = '1B029' // Ditambahkan: ID Klien
+String clientID = '23aa50456' // Ditambahkan: ID Klien
 
 String stockCode = 'APLN' // Ditambahkan: Sesuaikan dengan saham yang di-order
 
-BigDecimal orderPrice = new BigDecimal('171')
+BigDecimal orderPrice = new BigDecimal('104')
 
 int lotAmount = 3 // Ditambahkan: Sesuaikan dengan lot yang di-order
 
-String expectedStatus = 'Open' // Status yang diharapkan di TB_FO_ORDER (Kode '0')
+String side = 'B'
 
-// --- Verifikasi Jam Bursa ---
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
+    , 'Hold Booking', 'Booked']
+List<String> expectedBoardID = ['RG']
 
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
-        )
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
-
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
+//--- Verifikasi Jam Bursa ---
+//boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+//
+//if (isMarketOpen) {
+//    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
+//        )
+//} else {
+//    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//
+//    if (isMarketBreak) {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//    } else {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//    }
+//}
 
 String applicationID = 'id.bions.bnis.android.v2'
 
@@ -71,14 +75,13 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
     )
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw1', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw2', 0)
 
 def start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
-
 
 def now = ZonedDateTime.now(ZoneId.of('Asia/Jakarta'))
 
@@ -88,6 +91,7 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 //Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login.PNG')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
+
 def end = Instant.now()
 
 def seconds = Duration.between(start, end).toMillis() / 1000
@@ -96,7 +100,7 @@ KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('Transaksi/Sell_/Buy_sell_1'), 1)
+Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
@@ -107,11 +111,9 @@ Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 
 //Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
-
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERBOOKING.PNG')
 
 //Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERBOOKING1.PNG')
 
 start = Instant.now()
@@ -149,7 +151,7 @@ client.listen(10)
 // Tutup koneksi
 client.close()
 
- start1 = Instant.now()
+start1 = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
 
@@ -173,7 +175,7 @@ KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID
 
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatus)
+    lotAmount, orderPrice, expectedStatuses, side,expectedBoardID)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')

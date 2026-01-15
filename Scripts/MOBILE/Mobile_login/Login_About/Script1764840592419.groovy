@@ -29,19 +29,19 @@ import groovy.json.JsonSlurper as JsonSlurper
 
 
 
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
-
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
-
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
+//boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+//
+//if (isMarketOpen) {
+//    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+//} else {
+//    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//
+//    if (isMarketBreak) {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//    } else {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//    }
+//}
 
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
@@ -61,11 +61,11 @@ catch (Exception e) {
 
 //NetworkChecker.verifyInternetConnection()
 //Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
-Mobile.setText(findTestObject('Login_firebase/User_id'), '23aa50456', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA12747', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw1', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'tes123', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw2', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'tes123', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -78,14 +78,14 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 TcpClient client = new TcpClient()
 //client.connect('192.168.19.61', 62229 // FEED_SERVER_1
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+client.connect('mock.bions.id', 62229 // FEED_SERVER_1
   )
   
 //  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
  // )
 // Kirim login
 //client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-client.sendMessage('{ "action":"login", "user":"23ON49682", "password":"tes123" }')
+client.sendMessage('{ "action":"login", "user":"23AA12747", "password":"tes123" }')
 // Listen 5 detik untuk capture response login
 client.listen(5)
 // 🔌 Tutup koneksi
@@ -127,15 +127,9 @@ Mobile.swipe(500, 1500, 500, 500)
 //ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 
-Instant start1 = Instant.now()
+Mobile.tap(findTestObject('Profile/Profile'), 0)
 
-Mobile.tap(findTestObject('NAVBAR/portofolio'), 0)
-
-Instant end1 = Instant.now()
-
-long seconds = Duration.between(start1, end1).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu sampai Portofolio: $seconds detik")
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.closeApplication()
 

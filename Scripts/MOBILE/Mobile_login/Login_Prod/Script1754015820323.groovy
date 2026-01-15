@@ -28,11 +28,11 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 //NetworkChecker.verifyInternetConnection()
 Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '23ON49682', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw222', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'tes123', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw333', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'tes123', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -43,8 +43,10 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 TcpClient client = new TcpClient()
 
-client.connect('trade.bions.id', 62229 // FEED_SERVER_1
-    )
+//client.connect('trade.bions.id', 62229 // FEED_SERVER_1
+  //  )
+client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
+)
 
 // Kirim login
 client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')

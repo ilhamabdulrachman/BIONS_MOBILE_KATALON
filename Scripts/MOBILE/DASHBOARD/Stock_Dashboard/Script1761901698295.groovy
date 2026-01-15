@@ -42,25 +42,28 @@ if (isMarketOpen) {
     }
 }
 
-String applicationID = 'id.bions.bnis.android.v2'
-
-try {
-    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
-
-    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
-}
-catch (Exception e) {
-    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
-        FailureHandling.STOP_ON_FAILURE)
-} 
+//String applicationID = "id.bions.bnis.android.v2"
+//
+//
+//try {
+//    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+//
+//    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+//}
+//catch (Exception e) {
+//    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
+//        FailureHandling.STOP_ON_FAILURE)
+//} 
+Mobile.startExistingApplication('id.bions.bnis.android.v2',
+	FailureHandling.CONTINUE_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw2', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw1', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw1', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw2', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 

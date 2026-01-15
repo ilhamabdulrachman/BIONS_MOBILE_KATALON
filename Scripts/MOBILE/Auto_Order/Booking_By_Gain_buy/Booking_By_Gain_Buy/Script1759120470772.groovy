@@ -26,6 +26,16 @@ import java.time.Duration as Duration
 import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
+import com.utilities.OrderVerification as OrderVerification
+import java.math.BigDecimal as BigDecimal
+
+String clientID = '1B029'
+
+String stockCode = 'ABMM'
+
+BigDecimal orderPrice = new BigDecimal('2800')
+
+int lotAmount = 3
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
@@ -41,10 +51,8 @@ if (isMarketOpen) {
     }
 }
 
-def elemenDashboard = findTestObject('NAVBAR/home_')
-
-def Page_Portofolio = findTestObject('Portofolio/PAGE_PORTO')
-
+//def elemenDashboard = findTestObject('NAVBAR/home_')
+//def Page_Portofolio = findTestObject('Portofolio/PAGE_PORTO')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
 String applicationID = 'id.bions.bnis.android.v2'
@@ -89,10 +97,12 @@ client.connect('192.168.19.61', 62229 // FEED_SERVER_1
     )
 
 // Kirim login
-//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+
 //client.sendMessage('{ "action":"login", "user":"23AA50456", "password":"kittiw222" }')
 // Listen 5 detik untuk capture response login
-//client.listen(5)
+client.listen(5)
+
 // 🔌 Tutup koneksi
 client.close()
 
@@ -125,11 +135,11 @@ Mobile.tap(findTestObject('Auto_order/Change_stock'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder14.PNG')
 
-Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'KICI', 0)
+Mobile.setText(findTestObject('Auto_order/Select_Stock'), 'ABMM', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder15.PNG')
 
-Mobile.tap(findTestObject('Auto_order/tapsaham'), 0)
+Mobile.tap(findTestObject('Auto_order/TAP_SAHAM_'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder16.PNG')
 
@@ -153,15 +163,15 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Mobile.swipe(500, 1500, 500, 500)
 
 //Mobile.setText(findTestObject('Auto_order/Input_Price'), '133', 0)
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder21.PNG')
 
-Mobile.setText(findTestObject('Auto_order/LOT_GAIN_LOS'), '', 0)
+//Mobile.setText(findTestObject('Auto_order/LOT_GAIN_LOS'), '', 1)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder22.PNG')
+//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder22.PNG')
 
-Mobile.setText(findTestObject('Auto_order/LOT_GAIN_LOS'), '4', 0)
+//Mobile.setText(findTestObject('Auto_order/LOT_GAIN_LOS'), '3', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder23.PNG')
 
@@ -195,6 +205,8 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
 Mobile.swipe(500, 1500, 500, 500)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder30.PNG')
@@ -210,6 +222,18 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Allmenuautoorder33.PNG')
+
+KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
+
+// Panggil Custom Keyword untuk menjalankan query Oracle dan membandingkan data
+boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestOrder'(clientID, stockCode, lotAmount, 
+    orderPrice)
+
+if (dbVerificationResult) {
+    KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
+} else {
+    KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
+}
 
 Mobile.closeApplication()
 

@@ -31,9 +31,9 @@ import java.util.Map as Map
 
 String clientID = '1B029'
 
-String stockCode = 'APLN'
+String stockCode = 'ANTM'
 
-BigDecimal orderPrice = new BigDecimal('175')
+BigDecimal orderPrice = new BigDecimal('50')
 
 int lotAmount = 3
 
@@ -79,7 +79,7 @@ Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Mengguna
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 def start = Instant.now()
 
@@ -102,11 +102,16 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
+// ✅ SNAPSHOT PORTFOLIO AWAL
+int beforeVolume = CustomKeywords.'com.utilities.OrderVerification.getStockVolumeFromPortfolio'(clientID, stockCode)
+
+KeywordUtil.logInfo("📌 Snapshot portfolio BEFORE order | $stockCode = $beforeVolume")
+
 Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), 'APLN', 0)
+Mobile.setText(findTestObject('Transaksi/Sell_/enter_stock_name'), 'ANTM', 0)
 
 Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 
@@ -116,8 +121,6 @@ Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
 
 //Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERB.PNG')
-
 start = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
@@ -148,7 +151,6 @@ client.connect('192.168.19.61', 62229)
 
 // Kirim login - Menggunakan clientID dari variabel 
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
-
 // Listen 5 detik untuk capture response login
 client.listen(5)
 
@@ -183,6 +185,10 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
 
+// submit BUY 
+CustomKeywords.'com.utilities.OrderVerification.waitUntilOrderExecuted'(clientID, stockCode, 'B', 10 //...detik
+    )
+
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
     lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
@@ -192,6 +198,14 @@ if (dbVerificationResult) {
 } else {
     KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
 }
+
+CustomKeywords.'com.utilities.OrderVerification.waitUntilPortfolioDelta'(clientID, stockCode, lotAmount, beforeVolume, 10 //...detik
+    )
+Mobile.tap(findTestObject('Portofolio/PORTOXORDERLIST'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
 Mobile.closeApplication()
 

@@ -33,7 +33,7 @@ String clientID = '1B029' // Ditambahkan: ID Klien
 
 String stockCode = 'APLN' 
 
-BigDecimal orderPrice = new BigDecimal('176')
+BigDecimal orderPrice = new BigDecimal('192')
 
 int lotAmount = 1 
 
@@ -100,6 +100,9 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/DASHBOARD.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
+// ✅ SNAPSHOT PORTFOLIO AWAL
+int beforeVolume = CustomKeywords.'com.utilities.OrderVerification.getStockVolumeFromPortfolio'(clientID, stockCode)
 
 Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
@@ -174,15 +177,27 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
 
+/// submit BUY 
+CustomKeywords.'com.utilities.OrderVerification.waitUntilOrderExecuted'(clientID, stockCode, 'S', 10 //...detik
+    )
+
 // *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses, side,expectedBoardID)
+    lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
 } else {
     KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
 }
+
+CustomKeywords.'com.utilities.OrderVerification.waitUntilPortfolioDelta'(clientID, stockCode, lotAmount, beforeVolume, 10 //...detik
+    )
+Mobile.tap(findTestObject('Portofolio/PORTOXORDERLIST'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
+
+Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
 Mobile.closeApplication()
 
