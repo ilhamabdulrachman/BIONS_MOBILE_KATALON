@@ -32,14 +32,18 @@ import java.util.Map as Map
 
 String clientID = '1B029'
 String stockCode = 'APLN'
-BigDecimal orderPrice = new BigDecimal('189')
+BigDecimal orderPrice = new BigDecimal('192')
 int lotAmount = 5000        
 String side = 'B'
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
 List<String> expectedBoardID = ['RG']
 
-int splitAmount = 0
+int splitAmount = 10
+
+List<Integer> expectedSplitLots =
+        (1..splitAmount).collect { 1 }
+
 
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
@@ -71,7 +75,7 @@ Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 def start = Instant.now()
 
@@ -97,7 +101,7 @@ Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), stockCode, 0)
+Mobile.setText(findTestObject('Transaksi/Sell_/enter_stock_name'), stockCode, 0)
 
 Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 
@@ -147,13 +151,14 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 KeywordUtil.logInfo("Memulai verifikasi database untuk ${splitAmount} entry order client ID $clientID...")
 
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestVariedSplitOrders'(
-    clientID, 
-    stockCode, 
-    orderPrice, 
-    expectedStatuses, 
-    side, 
-    expectedBoardID
-)
+        clientID,
+        stockCode,
+        expectedSplitLots,
+        orderPrice,
+		expectedStatuses,
+        side,
+        expectedBoardID
+    )
 
 if (dbVerificationResult) {
     KeywordUtil.logInfo("✅ KESIMPULAN: Seluruh ${splitAmount} entry Split Order (dengan lot bervariasi) berhasil dikirim dan diverifikasi di Database Oracle.")

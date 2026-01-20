@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>test_login_</name>
+   <name>corp_bond_secondary</name>
    <tag></tag>
    <isRerun>false</isRerun>
    <mailRecipient></mailRecipient>
-   <numberOfRerun>1</numberOfRerun>
+   <numberOfRerun>0</numberOfRerun>
    <pageLoadTimeout>30</pageLoadTimeout>
-   <pageLoadTimeoutDefault>false</pageLoadTimeoutDefault>
+   <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>6610a6fc-6502-4728-8711-84b8b2f175c0</testSuiteGuid>
+   <testSuiteGuid>6e70f252-e462-4656-9d60-64551b4945f9</testSuiteGuid>
    <testCaseLink>
-      <guid>20e74267-1f0f-48f0-a4c0-48b3f6a1b536</guid>
+      <guid>e08b67e2-08e8-435a-b3ca-77eb80d5b8cf</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Mobile_login/Login_Exis</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Corp_Bond/buy_Secondary_CorpBond</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

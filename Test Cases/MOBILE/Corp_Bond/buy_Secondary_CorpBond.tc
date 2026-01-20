@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>buy_Secondary_CorpBond</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>f1ddbc40-e4b3-4867-8b12-3883ecadae3f</testCaseGuid>
+</TestCaseEntity>

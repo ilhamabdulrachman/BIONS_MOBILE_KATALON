@@ -43,7 +43,7 @@ if (isMarketOpen) {
     }
 }
 
-def elemenDashboard = findTestObject('TEST_LOGIN/stock')
+//def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -61,11 +61,13 @@ catch (Exception e) {
 
 //NetworkChecker.verifyInternetConnection()
 //Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'('id.bions.bnis.android.v2')
+
 Mobile.setText(findTestObject('Login_firebase/User_id'), '23aa50456', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'kittiw1', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'kittiw2', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'kittiw2', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -73,6 +75,12 @@ start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5, // total waktu observasi
+	2   // interval cek
+)
 //NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
@@ -127,10 +135,18 @@ Mobile.swipe(500, 1500, 500, 500)
 //ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
 
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5, // total waktu observasi
+	2   // interval cek
+	)
 Instant start1 = Instant.now()
 
 Mobile.tap(findTestObject('NAVBAR/portofolio'), 0)
-
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5,
+	2)
 Instant end1 = Instant.now()
 
 long seconds = Duration.between(start1, end1).toMillis() / 1000
@@ -138,4 +154,3 @@ long seconds = Duration.between(start1, end1).toMillis() / 1000
 KeywordUtil.logInfo("⏱️ Waktu sampai Portofolio: $seconds detik")
 
 Mobile.closeApplication()
-

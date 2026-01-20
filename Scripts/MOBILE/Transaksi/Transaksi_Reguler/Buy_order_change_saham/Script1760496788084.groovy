@@ -71,7 +71,8 @@ catch (Exception e) {
     KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
         FailureHandling.STOP_ON_FAILURE)
 } 
-
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
@@ -84,6 +85,9 @@ Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 def start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 1)
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5,
+	2)
 
 def end = Instant.now()
 
@@ -102,11 +106,16 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
+
 // ✅ SNAPSHOT PORTFOLIO AWAL
 int beforeVolume = CustomKeywords.'com.utilities.OrderVerification.getStockVolumeFromPortfolio'(clientID, stockCode)
 
 KeywordUtil.logInfo("📌 Snapshot portfolio BEFORE order | $stockCode = $beforeVolume")
-
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5,
+	2)
 Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
@@ -124,6 +133,9 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 start = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5,
+	2)
 
 end = Instant.now()
 
@@ -136,6 +148,8 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 start2 = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
 
 end2 = Instant.now()
 
@@ -166,7 +180,11 @@ client.close()
 start1 = Instant.now()
 
 Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
-
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
+	5,
+	2)
 end1 = Instant.now()
 
 seconds = (Duration.between(start1, end1).toMillis() / 1000)
