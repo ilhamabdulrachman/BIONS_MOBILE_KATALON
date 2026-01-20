@@ -125,60 +125,60 @@ class OrderVerification {
 		}
 	}
 
-	
+
 	@Keyword
-static boolean waitUntilPortfolioDelta(
-        String clientCode,
-        String stockCode,
-        int expectedLot,
-        int beforeVolume,
-        int timeoutSeconds
-) {
-    int waited = 0
-    int interval = 3
-    int lotSize = 100
+	static boolean waitUntilPortfolioDelta(
+			String clientCode,
+			String stockCode,
+			int expectedLot,
+			int beforeVolume,
+			int timeoutSeconds
+	) {
+		int waited = 0
+		int interval = 3
+		int lotSize = 100
 
-    int beforeLot = beforeVolume / lotSize
+		int beforeLot = beforeVolume / lotSize
 
-    while (waited < timeoutSeconds) {
+		while (waited < timeoutSeconds) {
 
-        int afterVolume = getStockVolumeFromPortfolio(clientCode, stockCode)
-        int afterLot = afterVolume / lotSize
+			int afterVolume = getStockVolumeFromPortfolio(clientCode, stockCode)
+			int afterLot = afterVolume / lotSize
 
-        int volumeDiff = afterVolume - beforeVolume
-        int lotDiff = afterLot - beforeLot
+			int volumeDiff = afterVolume - beforeVolume
+			int lotDiff = afterLot - beforeLot
 
-        if (lotDiff == expectedLot) {
-            KeywordUtil.logInfo(
-                "✅ Portfolio UPDATE | ${stockCode} |\n" +
-                "Before = ${beforeVolume} saham (${beforeLot} lot),\n" +
-                "After  = ${afterVolume} saham (${afterLot} lot),\n" +
-                "${volumeDiff >= 0 ? '+' : ''}${volumeDiff} saham " +
-                "(${lotDiff >= 0 ? '+' : ''}${lotDiff} lot)"
-            )
-            return true
-        }
+			if (lotDiff == expectedLot) {
+				KeywordUtil.logInfo(
+						"✅ Portfolio UPDATE | ${stockCode} |\n" +
+						"Before = ${beforeVolume} saham (${beforeLot} lot),\n" +
+						"After  = ${afterVolume} saham (${afterLot} lot),\n" +
+						"${volumeDiff >= 0 ? '+' : ''}${volumeDiff} saham " +
+						"(${lotDiff >= 0 ? '+' : ''}${lotDiff} lot)"
+						)
+				return true
+			}
 
-        KeywordUtil.logInfo(
-            "⏳ Menunggu portfolio update | ${stockCode} | " +
-            "Expected = ${expectedLot} lot, " +
-            "Current = ${lotDiff} lot (${waited}/${timeoutSeconds}s)"
-        )
+			KeywordUtil.logInfo(
+					"⏳ Menunggu portfolio update | ${stockCode} | " +
+					"Expected = ${expectedLot} lot, " +
+					"Current = ${lotDiff} lot (${waited}/${timeoutSeconds}s)"
+					)
 
-        Thread.sleep(interval * 1000)
-        waited += interval
-    }
+			Thread.sleep(interval * 1000)
+			waited += interval
+		}
 
-    KeywordUtil.markFailed(
-        "❌ Portfolio TIDAK UPDATE | ${stockCode} | " +
-        "Expected = ${expectedLot} lot, " +
-        "Actual = ${(getStockVolumeFromPortfolio(clientCode, stockCode) - beforeVolume) / lotSize} lot"
-    )
-    return false
-}
+		KeywordUtil.markFailed(
+				"❌ Portfolio TIDAK UPDATE | ${stockCode} | " +
+				"Expected = ${expectedLot} lot, " +
+				"Actual = ${(getStockVolumeFromPortfolio(clientCode, stockCode) - beforeVolume) / lotSize} lot"
+				)
+		return false
+	}
 
-	
-	
+
+
 	@Keyword
 	static int getStockVolumeFromPortfolio(String clientCode, String stockCode) {
 
@@ -703,6 +703,31 @@ static boolean waitUntilPortfolioDelta(
 	}
 
 
+	@Keyword
+	static boolean verifyLatestSplitOrdersByCount(
+			String clientCode,
+			String expectedStockCode,
+			int expectedCount,
+			BigDecimal expectedPrice,
+			List<String> expectedStatuses,
+			String expectedSide,
+			List<String> expectedBoardID
+	) {
+		List<Integer> dummyLots =
+				(1..expectedCount).collect { -1 }
+
+		return verifyLatestVariedSplitOrders(
+				clientCode,
+				expectedStockCode,
+				dummyLots,
+				expectedPrice,
+				expectedStatuses,
+				expectedSide,
+				expectedBoardID
+				)
+	}
+
+
 	@com.kms.katalon.core.annotation.Keyword
 	static boolean verifyMultipleOrders(List<Map> expectedOrders, String clientCode) {
 		Connection conn = null
@@ -870,7 +895,7 @@ static boolean waitUntilPortfolioDelta(
 	 * Memerlukan verifikasi nama kolom di DB.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
-	static boolean verifyLatestBondTransaction(String clientCode, String expectedBondCode, BigDecimal expectedNominal, BigDecimal expectedPrice, List<String> expectedStatuses) {
+	static boolean verifyLatestBondTransaction(String clientCode, String expectedBondCode, BigDecimal expectedNominal, BigDecimal expectedPrice, List<String> expectedStatuses,String expectedEstampDuty,BigDecimal expectedTotalPayment) {
 		Connection conn = null
 		ResultSet rsBond = null
 
@@ -902,6 +927,9 @@ static boolean waitUntilPortfolioDelta(
 				String actualTrxDate = rsBond.getString("TRXDATE")
 				String rawStatus = rsBond.getString("STATUS")
 				String actualRejectReason = rsBond.getString("REJECT_DESC")
+				String actualEstampDuty = rsBond.getString("ESTAMP_DUTY")
+				BigDecimal actualTotalPayment = rsBond.getBigDecimal("TOTAL_PAYMENT")
+
 
 				// Konversi Status Bond
 				String actualStatus = getBondTransactionStatusDescription(rawStatus)
@@ -909,15 +937,30 @@ static boolean waitUntilPortfolioDelta(
 				// --- Logika Pencocokan Data Bond Transaksi ---
 				boolean bondCodeMatch = actualBondCode.equalsIgnoreCase(expectedBondCode)
 				boolean nominalMatch = actualNominal.compareTo(expectedNominal) == 0
-				boolean priceMatch = actualPrice.compareTo(expectedPrice) == 0
+				boolean priceMatch   = actualPrice.compareTo(expectedPrice) == 0
+				boolean statusMatch  = expectedStatuses.contains(actualStatus)
+				boolean estampDutyMatch = true
+				boolean totalPaymentMatch = true
 
-				// Verifikasi status order: cek apakah status aktual ada di dalam List status yang diekspektasi
-				boolean statusMatch = expectedStatuses.contains(actualStatus)
+				if (expectedEstampDuty != null) {
+					estampDutyMatch =
+							actualEstampDuty?.equalsIgnoreCase(expectedEstampDuty)
+				}
 
-				if (bondCodeMatch && nominalMatch && priceMatch && statusMatch) {
-					KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi Berhasil (CODE, NOMINAL, PRICE, STATUS).")
-					KeywordUtil.logInfo("	[Detail Bond]: ID: ${actualTransactionId}, Bond: ${actualBondCode}, Nominal: ${actualNominal}, Price: ${actualPrice}, Status: ${actualStatus} (Raw: ${rawStatus})")
-					KeywordUtil.logInfo("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
+				if (expectedTotalPayment != null) {
+					totalPaymentMatch =
+							actualTotalPayment.compareTo(expectedTotalPayment) == 0
+				}
+				if (bondCodeMatch && nominalMatch && priceMatch &&
+						statusMatch && estampDutyMatch && totalPaymentMatch) {
+
+					KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi BERHASIL (SEMUA FIELD MATCH)")
+					KeywordUtil.logInfo(
+							"[Bond] ID=${actualTransactionId}, Code=${actualBondCode}, " +
+							"Nominal=${actualNominal}, Price=${actualPrice}, " +
+							"Status=${actualStatus}, EstampDuty=${actualEstampDuty}, " +
+							"TotalPayment=${actualTotalPayment}"
+							)
 					return true
 				} else {
 					KeywordUtil.markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Data tidak cocok.")
@@ -926,6 +969,8 @@ static boolean waitUntilPortfolioDelta(
 					KeywordUtil.logError("	Ekspektasi Nominal: ${expectedNominal}, Aktual: ${actualNominal}")
 					KeywordUtil.logError("	Ekspektasi Price: ${expectedPrice}, Aktual: ${actualPrice}")
 					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus})")
+					KeywordUtil.logError("	Ekspektasi EstampDuty: ${expectedEstampDuty}, Aktual: ${actualEstampDuty}")
+					KeywordUtil.logError("	Ekspektasi TotalPayment: ${expectedTotalPayment}, Aktual: ${actualTotalPayment}")
 					KeywordUtil.logError("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
 					return false
 				}

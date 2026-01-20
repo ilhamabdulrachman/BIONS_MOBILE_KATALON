@@ -150,6 +150,32 @@ public class TradingHours {
 	}
 	
 	@Keyword
+	def static boolean isCorpBondnSecondaryAllowed() {
+		def jakartaZone = ZoneId.of('Asia/Jakarta')
+		def currentTime = ZonedDateTime.now(jakartaZone)
+		def currentDay = currentTime.getDayOfWeek()
+		def localTime = currentTime.toLocalTime()
+
+		// Tutup Sabtu & Minggu
+		if (currentDay == DayOfWeek.SATURDAY || currentDay == DayOfWeek.SUNDAY) {
+			KeywordUtil.logInfo("SBN Secondary tidak tersedia (akhir pekan).")
+			return false
+		}
+
+		// Sesi I (Senin-Jumat, 09:00–11:59)
+		def sesi1Start = LocalTime.of(9, 0)
+		def sesi1End   = LocalTime.of(11, 59)
+
+		if (!localTime.isBefore(sesi1Start) && localTime.isBefore(sesi1End)) {
+			KeywordUtil.logInfo("✅ Corp Bond Secondary diperbolehkan (Sesi I).")
+			return true
+		}
+
+		KeywordUtil.logInfo("❌ Corp Bond Secondary hanya bisa di Sesi I (09:00–11:59).")
+		return false
+	}
+
+	@Keyword
 	def static boolean isTransaksi_TN_Allowed() {
 		def jakartaZone = ZoneId.of('Asia/Jakarta')
 		def currentTime = ZonedDateTime.now(jakartaZone)
