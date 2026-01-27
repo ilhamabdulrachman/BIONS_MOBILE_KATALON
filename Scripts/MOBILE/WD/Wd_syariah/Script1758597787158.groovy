@@ -37,7 +37,17 @@ import groovy.json.JsonSlurper as JsonSlurper
 def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 
 //NetworkChecker.verifyInternetConnection()
-Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
+String applicationID = 'id.bions.bnis.android.v2'
+
+try {
+    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+
+    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+}
+catch (Exception e) {
+    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
+        FailureHandling.STOP_ON_FAILURE)
+} 
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
@@ -48,7 +58,7 @@ Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -87,7 +97,6 @@ client.close()
 
 Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
 
-Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 
 ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 3)
 

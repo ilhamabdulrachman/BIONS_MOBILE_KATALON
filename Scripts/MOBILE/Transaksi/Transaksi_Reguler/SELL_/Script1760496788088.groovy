@@ -26,29 +26,28 @@ import java.time.Duration as Duration
 import com.utilities.TradingHours as TradingHours
 import com.utilities.OrderVerification as OrderVerification
 import java.math.BigDecimal as BigDecimal
-import java.util.ArrayList
-import java.util.Map
+import java.util.ArrayList as ArrayList
+import java.util.Map as Map
 
-String clientID = '1B029' // Ditambahkan: ID Klien
+String clientID = '1B029'
 
-String stockCode = 'APLN' 
+String stockCode = 'APLN'
 
-BigDecimal orderPrice = new BigDecimal('192')
+BigDecimal orderPrice = new BigDecimal('190')
 
-int lotAmount = 1 
+int lotAmount = 1
 
 String side = 'S'
 
 List<String> expectedStatuses = ['Open', 'Partial', 'Match (Executed)', 'Withdraw (Cancelled)', 'Amend', 'Reject', 'Pending New'
     , 'Hold Booking', 'Booked']
+
 List<String> expectedBoardID = ['RG']
 
-// --- Verifikasi Jam Bursa ---
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...' // Menambahkan pengecekan market break (opsional, tapi disarankan)
-        )
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian login...')
 } else {
     boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
 
@@ -73,12 +72,11 @@ catch (Exception e) {
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
-    )
+Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 def start = Instant.now()
 
@@ -108,7 +106,7 @@ Mobile.tap(findTestObject('Transaksi/BUYSELL'), 1)
 
 Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 
-Mobile.setText(findTestObject('Transaksi/STOCK_NAME'), 'APLN', 0)
+Mobile.setText(findTestObject('Transaksi/Sell_/enter_stock_name'), 'APLN', 0)
 
 Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
 
@@ -122,13 +120,13 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 //Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
 start = Instant.now()
 
-Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
+Mobile.tap(findTestObject('Transaksi/Sell_/BUTTON_SEL'), 1)
 
 end = Instant.now()
 
 seconds = (Duration.between(start, end).toMillis() / 1000)
 
-KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman form buy : $seconds detik")
+KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman submit: $seconds detik")
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERS3.PNG')
 
@@ -140,13 +138,13 @@ def client = new TcpClient()
 
 client.connect('REDACTED_INTERNAL_IP', 62229)
 
-// Kirim login - Menggunakan clientID dari variabel (Sintaks diperbaiki)
+// Kirim login - Menggunakan clientID dari variabel
 client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
 
 // Listen 5 detik untuk capture response login
 client.listen(5)
 
-// Kirim subscribe order - Menggunakan clientID dari variabel (Sintaks diperbaiki)
+// Kirim subscribe order - Menggunakan clientID dari variabel 
 client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"${clientID}\"}")
 
 // Listen 10 detik untuk capture response order
@@ -181,7 +179,6 @@ KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID
 CustomKeywords.'com.utilities.OrderVerification.waitUntilOrderExecuted'(clientID, stockCode, 'S', 10 //...detik
     )
 
-// *** Panggilan Verifikasi TB_FO_ORDER ***
 boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
     lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
 
@@ -193,10 +190,13 @@ if (dbVerificationResult) {
 
 CustomKeywords.'com.utilities.OrderVerification.waitUntilPortfolioDelta'(clientID, stockCode, lotAmount, beforeVolume, 10 //...detik
     )
+
 Mobile.tap(findTestObject('Portofolio/PORTOXORDERLIST'), 0)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
 Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
 Mobile.closeApplication()

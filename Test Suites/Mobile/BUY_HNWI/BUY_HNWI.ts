@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>AMEND_BUY</name>
+   <name>BUY_HNWI</name>
    <tag></tag>
    <isRerun>false</isRerun>
-   <mailRecipient>ilham.rachman@bnisekuritas.co.id;</mailRecipient>
+   <mailRecipient></mailRecipient>
    <numberOfRerun>0</numberOfRerun>
    <pageLoadTimeout>30</pageLoadTimeout>
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>c3fabeb8-db0f-45e0-833e-e4ab62bf4e82</testSuiteGuid>
+   <testSuiteGuid>cf9eb675-a4ee-47e1-abc3-5299efd3ddd5</testSuiteGuid>
    <testCaseLink>
-      <guid>397d4fb6-bb0d-4d58-915d-52d9e0c34a69</guid>
+      <guid>9588ede7-1bd8-4f8f-a55f-4dda40915005</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Transaksi/AMEND/AMEND_BUY</testCaseId>
+      <testCaseId>Test Cases/MOBILE/HNWI/Transaksi_Buy_HNWI</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

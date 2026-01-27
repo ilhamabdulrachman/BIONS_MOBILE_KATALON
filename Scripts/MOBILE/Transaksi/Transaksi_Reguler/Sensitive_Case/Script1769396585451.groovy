@@ -71,8 +71,7 @@ catch (Exception e) {
     KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
         FailureHandling.STOP_ON_FAILURE)
 } 
-CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/LOGIN.PNG', FailureHandling.STOP_ON_FAILURE)
 
 Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Menggunakan variabel clientID
@@ -111,8 +110,7 @@ Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 int beforeVolume = CustomKeywords.'com.utilities.OrderVerification.getStockVolumeFromPortfolio'(clientID, stockCode)
 
 KeywordUtil.logInfo("📌 Snapshot portfolio BEFORE order | $stockCode = $beforeVolume")
-CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-	'id.bions.bnis.android.v2')
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'()
 CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
 	5,
 	2)
@@ -123,109 +121,21 @@ Mobile.tap(findTestObject('Transaksi/CHANGE'), 0)
 Mobile.setText(findTestObject('Transaksi/Sell_/enter_stock_name'), 'ANTM', 0)
 
 Mobile.tap(findTestObject('Transaksi/TAP_STOCK_NAME'), 0)
+Mobile.delay(20, FailureHandling.STOP_ON_FAILURE)
+boolean unhealthy =
+    CustomKeywords.'com.utilities.FreezeDetector.detectFrozenOrCrashedScreenObserver'(5, 2)
 
-Mobile.delay(8, FailureHandling.STOP_ON_FAILURE)
-
-//Mobile.setText(findTestObject('Transaksi/input_price_'), '171', 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERA.PNG')
-
-//Mobile.tap(findTestObject('Transaksi/send_order_booking'), 0)
-start = Instant.now()
-
-Mobile.tap(findTestObject('Transaksi/button_buy'), 1)
-CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
-	5,
-	2)
-
-end = Instant.now()
-
-seconds = (Duration.between(start, end).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu masuk ke halaman form buy : $seconds detik")
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERC.PNG')
-
-start2 = Instant.now()
-
-Mobile.tap(findTestObject('Transaksi/confirm_submit_buy'), 0)
-CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-	'id.bions.bnis.android.v2')
-
-end2 = Instant.now()
-
-seconds = (Duration.between(start2, end2).toMillis() / 1000)
-
-KeywordUtil.logInfo("⏱️ Waktu submit order : $seconds detik")
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERD.PNG')
-
-def client = new TcpClient()
-
-client.connect('REDACTED_INTERNAL_IP', 62229)
-
-// Kirim login - Menggunakan clientID dari variabel 
-client.sendMessage("{\"action\":\"login\", \"user\":\"${clientID}\", \"password\":\"q12345\"}")
-// Listen 5 detik untuk capture response login
-client.listen(5)
-
-// Kirim subscribe order - Menggunakan clientID dari variabel
-client.sendMessage("{\"action\":\"subscribe\", \"channel\":\"order\", \"user\":\"${clientID}\"}")
-
-// Listen 10 detik untuk capture response order
-client.listen(10)
-
-// Tutup koneksi
-client.close()
-
-start1 = Instant.now()
-
-Mobile.tap(findTestObject('Transaksi/view_order_list'), 1)
-CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-	'id.bions.bnis.android.v2')
-CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
-	5,
-	2)
-end1 = Instant.now()
-
-seconds = (Duration.between(start1, end1).toMillis() / 1000)
-
-KeywordUtil.markPassed("⏱️ Order List terbuka dalam $seconds detik")
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Orderlist3.PNG')
-
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERE.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERF.PNG')
-
-KeywordUtil.logInfo("Memulai verifikasi database untuk order client ID $clientID...")
-
-// submit BUY 
-CustomKeywords.'com.utilities.OrderVerification.waitUntilOrderExecuted'(clientID, stockCode, 'B', 10 //...detik
-    )
-
-// *** Panggilan Verifikasi TB_FO_ORDER ***
-boolean dbVerificationResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestRegularOrder'(clientID, stockCode, 
-    lotAmount, orderPrice, expectedStatuses, side, expectedBoardID)
-
-if (dbVerificationResult) {
-    KeywordUtil.logInfo('✅ STATUS: Transaksi order berhasil dan SINKRON dengan Database Oracle.')
+if (unhealthy) {
+    KeywordUtil.logInfo("⚠️ App terdeteksi freeze / crash (observer mode)")
 } else {
-    KeywordUtil.logError('❌ STATUS: Ketidaksesuaian data order ditemukan di database.')
+    KeywordUtil.logInfo("✅ App normal setelah tap stock")
 }
-
-CustomKeywords.'com.utilities.OrderVerification.waitUntilPortfolioDelta'(clientID, stockCode, lotAmount, beforeVolume, 10 //...detik
+try {
+    Mobile.takeScreenshot(
+        '/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/app_health.PNG'
     )
-Mobile.tap(findTestObject('Portofolio/PORTOXORDERLIST'), 0)
-CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-	'id.bions.bnis.android.v2')
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
-
-Mobile.delay(10, FailureHandling.STOP_ON_FAILURE)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
-
-Mobile.closeApplication()
+    KeywordUtil.logInfo("📸 Screenshot app health berhasil")
+} catch (Exception e) {
+    KeywordUtil.logInfo("⚠️ Screenshot gagal (app crash / driver tidak siap)")
+}
 

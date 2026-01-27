@@ -31,9 +31,9 @@ import java.util.Map as Map
 
 String clientID = '1B029'
 
-String stockCode = 'AMAN'
+String stockCode = 'TLKM'
 
-BigDecimal orderPrice = new BigDecimal('103')
+BigDecimal orderPrice = new BigDecimal('324')
 
 int lotAmount = 1
 
@@ -79,7 +79,7 @@ Mobile.setText(findTestObject('Login_firebase/User_id'), clientID, 0 // Mengguna
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('TEST_LOGIN/Pin2'), 'q12345', 0)
 
 def start = Instant.now()
 
