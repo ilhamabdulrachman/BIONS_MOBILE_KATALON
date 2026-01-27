@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>AMEND_BUY</name>
+   <name>Buy</name>
    <tag></tag>
    <isRerun>false</isRerun>
    <mailRecipient>ilham.rachman@bnisekuritas.co.id;</mailRecipient>
@@ -10,12 +10,12 @@
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>c3fabeb8-db0f-45e0-833e-e4ab62bf4e82</testSuiteGuid>
+   <testSuiteGuid>54501bc6-1335-4692-8fb0-5ac9652430b3</testSuiteGuid>
    <testCaseLink>
-      <guid>397d4fb6-bb0d-4d58-915d-52d9e0c34a69</guid>
+      <guid>eb7d03f1-b55f-4ed5-96c2-b0e71f46dff2</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Transaksi/AMEND/AMEND_BUY</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Transaksi/Transaksi_Reguler/Buy_order_change_saham</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

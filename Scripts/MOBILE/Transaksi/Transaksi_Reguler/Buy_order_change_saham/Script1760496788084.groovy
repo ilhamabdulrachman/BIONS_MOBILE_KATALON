@@ -33,9 +33,9 @@ String clientID = '1B029'
 
 String stockCode = 'ANTM'
 
-BigDecimal orderPrice = new BigDecimal('50')
+BigDecimal orderPrice = new BigDecimal('59')
 
-int lotAmount = 3
+int lotAmount = 2
 
 String side = 'B'
 
@@ -220,9 +220,11 @@ if (dbVerificationResult) {
 CustomKeywords.'com.utilities.OrderVerification.waitUntilPortfolioDelta'(clientID, stockCode, lotAmount, beforeVolume, 10 //...detik
     )
 Mobile.tap(findTestObject('Portofolio/PORTOXORDERLIST'), 0)
+CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
+	'id.bions.bnis.android.v2')
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
-Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+Mobile.delay(10, FailureHandling.STOP_ON_FAILURE)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/ORDERG.PNG')
 
 Mobile.closeApplication()

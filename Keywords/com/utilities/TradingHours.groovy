@@ -148,7 +148,7 @@ public class TradingHours {
 		KeywordUtil.logInfo("❌ SBN Secondary hanya bisa di Sesi I (09:00–11:59).")
 		return false
 	}
-	
+
 	@Keyword
 	def static boolean isCorpBondnSecondaryAllowed() {
 		def jakartaZone = ZoneId.of('Asia/Jakarta')

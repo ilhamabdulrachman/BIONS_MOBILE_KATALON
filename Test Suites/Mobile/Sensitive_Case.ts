@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>AMEND_BUY</name>
+   <name>Sensitive_Case</name>
    <tag></tag>
    <isRerun>false</isRerun>
-   <mailRecipient>ilham.rachman@bnisekuritas.co.id;</mailRecipient>
+   <mailRecipient></mailRecipient>
    <numberOfRerun>0</numberOfRerun>
    <pageLoadTimeout>30</pageLoadTimeout>
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>c3fabeb8-db0f-45e0-833e-e4ab62bf4e82</testSuiteGuid>
+   <testSuiteGuid>4ce674e5-ce65-4c87-a8ba-60cdefae02d8</testSuiteGuid>
    <testCaseLink>
-      <guid>397d4fb6-bb0d-4d58-915d-52d9e0c34a69</guid>
+      <guid>ad95e3de-9b1e-403f-a7f7-f44a02b977c8</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Transaksi/AMEND/AMEND_BUY</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Transaksi/Transaksi_Reguler/Sensitive_Case</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>
