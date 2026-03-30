@@ -109,7 +109,6 @@ Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
 
 // ✅ SNAPSHOT PORTFOLIO AWAL
 int beforeVolume = CustomKeywords.'com.utilities.OrderVerification.getStockVolumeFromPortfolio'(clientID, stockCode)
-
 KeywordUtil.logInfo("📌 Snapshot portfolio BEFORE order | $stockCode = $beforeVolume")
 CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
 	'id.bions.bnis.android.v2')

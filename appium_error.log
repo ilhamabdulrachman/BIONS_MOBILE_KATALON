@@ -1,3 +1,4 @@
 WARN Appium Appium encountered 1 warning while validating drivers found in manifest /Users/bionsrevamp/.appium/node_modules/.cache/appium/extensions.yaml
 WARN Appium Driver "uiautomator2" has 1 potential problem: 
-WARN Appium   - Driver "uiautomator2" (package `appium-uiautomator2-driver`) may be incompatible with the current version of Appium (v2.0.1) due to its peer dependency on older Appium v^3.0.0-rc.2. Please upgrade `appium-uiautomator2-driver` to v6.7.10 or newer.
+WARN Appium   - Driver "uiautomator2" (package `appium-uiautomator2-driver`) may be incompatible with the current version of Appium (v2.0.1) due to its peer dependency on older Appium v^3.0.0-rc.2. Please upgrade `appium-uiautomator2-driver` to v6.9.3 or newer.
+[38;5;80m[Logcat][0m Logcat terminated with code 0, signal null

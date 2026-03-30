@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>Login</name>
+   <name>PRIMARY_ACC</name>
    <tag></tag>
    <isRerun>false</isRerun>
    <mailRecipient></mailRecipient>
@@ -10,12 +10,12 @@
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
    <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>e6a7bb98-9dc9-4440-9ecb-9437e7ba72c3</testSuiteGuid>
+   <testSuiteGuid>0e63b469-b83c-4132-97a7-31f1057b193f</testSuiteGuid>
    <testCaseLink>
-      <guid>afdc6bab-cba9-4999-996c-70ed15a3eebc</guid>
+      <guid>7e70d4ad-0b99-4557-9972-f912dcd142b3</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE/Mobile_login/Login_Biometric</testCaseId>
+      <testCaseId>Test Cases/MOBILE/Primary_Account/Primary_Account</testCaseId>
       <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

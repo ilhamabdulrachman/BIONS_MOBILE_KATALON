@@ -110,50 +110,35 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
-Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric.PNG')
 
-Mobile.delay(5, FailureHandling.STOP_ON_FAILURE)
+Mobile.tap(findTestObject('Login_firebase/use_biometric'), 0)
+
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric_1.PNG')
+
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
 //Mobile.tap(findTestObject('TEST_LOGIN/SKIP_QUIK_TOUR'), 0)
 //ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.tap(findTestObject('Profile/Profile'), 0)
 
-//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard1.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard2.PNG')
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
 
-//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard3.PNG')
-
 Mobile.swipe(500, 1500, 500, 500)
 
-//ShimmerWait.waitForShimmerToDisappear(elemenDashboard, 2)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Dashboard4.PNG')
+Mobile.tap(findTestObject('Login_firebase/Klik_sign_out'), 0)
 
-CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(5 // total waktu observasi
-    , 2 // interval cek
-    )
+Mobile.tap(findTestObject('Login_firebase/sign_out'), 0)
 
-Instant start1 = Instant.now()
+Mobile.tap(findTestObject('Login_firebase/Finger_biometric'), 0)
 
-Mobile.tap(findTestObject('NAVBAR/portofolio'), 0)
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
-//CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-//	'id.bions.bnis.android.v2')
-//CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
-//	5,
-//	2)
-Instant end1 = Instant.now()
-
-long seconds = Duration.between(start1, end1).toMillis() / 1000
-
-KeywordUtil.logInfo("⏱️ Waktu sampai Portofolio: $seconds detik")
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric_2.PNG')
 
 Mobile.closeApplication()
 

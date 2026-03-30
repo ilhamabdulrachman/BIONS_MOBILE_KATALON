@@ -178,6 +178,121 @@ class OrderVerification {
 	}
 
 
+	@Keyword
+	static boolean validateAccountDataIntegrity(String clientCode) {
+	
+		Connection conn = null
+		ResultSet rs = null
+	
+		String sql = """
+        SELECT 
+            CAC_NAME,
+            CAC_BEGOUTSTANDING,
+            CAC_CURRENTOUTSTANDING,
+            CAC_BEGCASHONHAND,
+            CAC_CURRENTCASHONHAND,
+            CAC_FEEBUY_OLT,
+            CAC_FEESELL_OLT
+        FROM BNISFO.TB_FO_ACCOUNT
+        WHERE CLS_INITIALCODE = ?
+    """
+	
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+	
+			def ps = conn.prepareStatement(sql.trim())
+			ps.setString(1, clientCode)
+	
+			rs = ps.executeQuery()
+	
+			if (!rs.next()) {
+				KeywordUtil.markFailed("❌ Data account tidak ditemukan: ${clientCode}")
+				return false
+			}
+	
+			// === AMBIL DATA ===
+			String name = rs.getString("CAC_NAME")
+			BigDecimal begOut = rs.getBigDecimal("CAC_BEGOUTSTANDING")
+			BigDecimal currOut = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
+			BigDecimal begCash = rs.getBigDecimal("CAC_BEGCASHONHAND")
+			BigDecimal currCash = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
+			BigDecimal feeBuy = rs.getBigDecimal("CAC_FEEBUY_OLT")
+			BigDecimal feeSell = rs.getBigDecimal("CAC_FEESELL_OLT")
+	
+			boolean valid = true
+	
+			// ===============================
+			// 🔍 VALIDASI BASIC (NOT NULL)
+			// ===============================
+			if (!name) {
+				KeywordUtil.markFailed("❌ CAC_NAME kosong")
+				valid = false
+			}
+	
+			if (begOut == null || currOut == null || begCash == null || currCash == null) {
+				KeywordUtil.markFailed("❌ Ada field numeric NULL")
+				valid = false
+			}
+	
+			// ===============================
+			// 🔍 VALIDASI NILAI (TIDAK NEGATIF)
+			// ===============================
+			if (currCash?.compareTo(BigDecimal.ZERO) < 0) {
+				KeywordUtil.logInfo("ℹ️ Cash negatif (kemungkinan karena outstanding / settlement)")
+			}
+			
+			// ✅ Outstanding boleh negatif
+			if (currOut?.compareTo(BigDecimal.ZERO) < 0) {
+				KeywordUtil.logInfo("ℹ️ Outstanding negatif (normal setelah BUY)")
+			}
+	
+			// ===============================
+			// 🔍 VALIDASI LOGIKA DATA
+			// ===============================
+			if (currOut?.compareTo(BigDecimal.ZERO) < 0) {
+				KeywordUtil.logInfo("✅ Posisi BUY terdeteksi")
+			} else if (currOut?.compareTo(BigDecimal.ZERO) == 0) {
+				KeywordUtil.logInfo("✅ Tidak ada posisi terbuka")
+			} else {
+				KeywordUtil.logInfo("ℹ️ Outstanding positif (kemungkinan SELL)")
+			}
+	
+			// ===============================
+			// 🔍 VALIDASI FEE (WAJAR)
+			// ===============================
+			if (feeBuy != null && (feeBuy < 0 || feeBuy > 5)) {
+				KeywordUtil.markFailed("❌ Fee Buy tidak wajar: ${feeBuy}")
+				valid = false
+			}
+	
+			if (feeSell != null && (feeSell < 0 || feeSell > 5)) {
+				KeywordUtil.markFailed("❌ Fee Sell tidak wajar: ${feeSell}")
+				valid = false
+			}
+	
+			// ===============================
+			// ✅ HASIL AKHIR
+			// ===============================
+			if (valid) {
+				KeywordUtil.logInfo(
+					"✅ Data ACCOUNT VALID & KONSISTEN\n" +
+					"Name=${name}, BegOut=${begOut}, CurrOut=${currOut},\n" +
+					"BegCash=${begCash}, CurrCash=${currCash},\n" +
+					"FeeBuy=${feeBuy}, FeeSell=${feeSell}"
+				)
+			}
+	
+			return valid
+	
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error DB: ${e.message}")
+			return false
+		} finally {
+			if (rs != null) rs.close()
+			if (conn != null) conn.close()
+		}
+	}
 
 	@Keyword
 	static int getStockVolumeFromPortfolio(String clientCode, String stockCode) {
@@ -598,39 +713,39 @@ class OrderVerification {
 	 * sesuai dengan urutan yang diekspektasikan dalam List<Integer> expectedSplitLots.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
-static boolean verifyLatestVariedSplitOrders(
-        String clientCode,
-        String expectedStockCode,
-        List<Integer> expectedSplitLots,
-        BigDecimal expectedPrice,
-        List<String> expectedStatuses,
-        String expectedSide,
-        List<String> expectedBoardID
-) {
+	static boolean verifyLatestVariedSplitOrders(
+			String clientCode,
+			String expectedStockCode,
+			List<Integer> expectedSplitLots,
+			BigDecimal expectedPrice,
+			List<String> expectedStatuses,
+			String expectedSide,
+			List<String> expectedBoardID
+	) {
 
-    Connection conn = null
-    ResultSet rsOrders = null
-    boolean overallResult = true
+		Connection conn = null
+		ResultSet rsOrders = null
+		boolean overallResult = true
 
-    int expectedSplitCount = expectedSplitLots.size()
+		int expectedSplitCount = expectedSplitLots.size()
 
-    KeywordUtil.logInfo(
-        "🔍 Verifikasi Varied Split Order | Client=${clientCode}, Stock=${expectedStockCode}, Split=${expectedSplitCount}"
-    )
+		KeywordUtil.logInfo(
+				"🔍 Verifikasi Varied Split Order | Client=${clientCode}, Stock=${expectedStockCode}, Split=${expectedSplitCount}"
+				)
 
-    // === SIDE MAPPING ===
-    String dbSideCode
-    if (expectedSide.equalsIgnoreCase('B')) {
-        dbSideCode = '1'
-    } else if (expectedSide.equalsIgnoreCase('S')) {
-        dbSideCode = '2'
-    } else {
-        KeywordUtil.markFailed("❌ Side tidak valid: ${expectedSide}")
-        return false
-    }
+		// === SIDE MAPPING ===
+		String dbSideCode
+		if (expectedSide.equalsIgnoreCase('B')) {
+			dbSideCode = '1'
+		} else if (expectedSide.equalsIgnoreCase('S')) {
+			dbSideCode = '2'
+		} else {
+			KeywordUtil.markFailed("❌ Side tidak valid: ${expectedSide}")
+			return false
+		}
 
-    // === QUERY ===
-    String sql = """
+		// === QUERY ===
+		String sql = """
         SELECT * FROM (
             SELECT
                 ORD_ID,
@@ -648,108 +763,107 @@ static boolean verifyLatestVariedSplitOrders(
         WHERE ROWNUM <= ?
     """
 
-    List<Map> actualOrders = []
+		List<Map> actualOrders = []
 
-    try {
-        Class.forName(DB_DRIVER)
-        conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
 
-        def pstmt = conn.prepareStatement(sql.trim())
-        pstmt.setString(1, clientCode)
-        pstmt.setString(2, dbSideCode)
-        pstmt.setInt(3, expectedSplitCount)
+			def pstmt = conn.prepareStatement(sql.trim())
+			pstmt.setString(1, clientCode)
+			pstmt.setString(2, dbSideCode)
+			pstmt.setInt(3, expectedSplitCount)
 
-        rsOrders = pstmt.executeQuery()
+			rsOrders = pstmt.executeQuery()
 
-        while (rsOrders.next()) {
-            actualOrders.add([
-                ordId     : rsOrders.getString("ORD_ID"),
-                stockCode : rsOrders.getString("SEC_ID"),
-                lotAmount : rsOrders.getInt("ORD_LOT"),
-                price     : rsOrders.getBigDecimal("ORD_PRICE"),
-                rawStatus : rsOrders.getString("ORS_ID"),
-                boardID   : rsOrders.getString("BRD_ID")?.toUpperCase(),
-                side      : rsOrders.getString("ORD_SIDE") == '1' ? 'BUY' : 'SELL'
-            ])
-        }
+			while (rsOrders.next()) {
+				actualOrders.add([
+					ordId     : rsOrders.getString("ORD_ID"),
+					stockCode : rsOrders.getString("SEC_ID"),
+					lotAmount : rsOrders.getInt("ORD_LOT"),
+					price     : rsOrders.getBigDecimal("ORD_PRICE"),
+					rawStatus : rsOrders.getString("ORS_ID"),
+					boardID   : rsOrders.getString("BRD_ID")?.toUpperCase(),
+					side      : rsOrders.getString("ORD_SIDE") == '1' ? 'BUY' : 'SELL'
+				])
+			}
 
-        // === VALIDASI JUMLAH ORDER ===
-        if (actualOrders.size() != expectedSplitCount) {
-            KeywordUtil.markFailed(
-                "❌ Jumlah order tidak sesuai. Expected=${expectedSplitCount}, Actual=${actualOrders.size()}"
-            )
-            return false
-        }
+			// === VALIDASI JUMLAH ORDER ===
+			if (actualOrders.size() != expectedSplitCount) {
+				KeywordUtil.markFailed(
+						"❌ Jumlah order tidak sesuai. Expected=${expectedSplitCount}, Actual=${actualOrders.size()}"
+						)
+				return false
+			}
 
-        // =====================================================
-		// 🔑 VALIDASI LOT (SYSTEM GENERATED / RANDOM)
-		// =====================================================
-		List<Integer> actualLots = actualOrders.collect { it.lotAmount }
-		
-		KeywordUtil.logInfo("📊 LOT AKTUAL (ENGINE GENERATED): ${actualLots}")
-		
-		// aturan minimal: semua lot harus > 0
-		boolean lotValid = actualLots.every { it > 0 }
-		
-		if (!lotValid) {
-		    KeywordUtil.markFailed(
-		        "❌ LOT INVALID: ditemukan lot <= 0\nActual: ${actualLots}"
-		    )
-		    return false
+			// =====================================================
+			// 🔑 VALIDASI LOT (SYSTEM GENERATED / RANDOM)
+			// =====================================================
+			List<Integer> actualLots = actualOrders.collect { it.lotAmount }
+
+			KeywordUtil.logInfo("📊 LOT AKTUAL (ENGINE GENERATED): ${actualLots}")
+
+			// aturan minimal: semua lot harus > 0
+			boolean lotValid = actualLots.every { it > 0 }
+
+			if (!lotValid) {
+				KeywordUtil.markFailed(
+						"❌ LOT INVALID: ditemukan lot <= 0\nActual: ${actualLots}"
+						)
+				return false
+			}
+
+			// =====================================================
+			// VALIDASI ATRIBUT LAIN (NON-LOT)
+			// =====================================================
+			actualOrders.eachWithIndex { actual, idx ->
+
+				String actualStatusDesc = getOrderStatusDescription(actual.rawStatus)
+
+				boolean stockMatch =
+						actual.stockCode?.equalsIgnoreCase(expectedStockCode)
+
+				boolean priceMatch =
+						expectedPrice == null ||
+						(actual.price != null && actual.price.compareTo(expectedPrice) == 0)
+
+				boolean sideMatch =
+						(expectedSide == 'B' && actual.side == 'BUY') ||
+						(expectedSide == 'S' && actual.side == 'SELL')
+
+				boolean statusMatch =
+						expectedStatuses.contains(actualStatusDesc)
+
+				boolean boardMatch =
+						actual.boardID != null && expectedBoardID.contains(actual.boardID)
+
+				if (stockMatch && priceMatch && sideMatch && statusMatch && boardMatch) {
+					KeywordUtil.logInfo(
+							"✅ Order #${idx + 1} OK | ID=${actual.ordId}, Lot=${actual.lotAmount}, Status=${actualStatusDesc}"
+							)
+				} else {
+					KeywordUtil.markFailed(
+							"❌ Order #${idx + 1} GAGAL\n" +
+							"StockMatch=${stockMatch}, PriceMatch=${priceMatch}, SideMatch=${sideMatch},\n" +
+							"Status=${actualStatusDesc}, Board=${actual.boardID}"
+							)
+					overallResult = false
+				}
+			}
+
+			if (overallResult) {
+				KeywordUtil.logInfo("🎉 SEMUA SPLIT ORDER TERVERIFIKASI DENGAN BENAR")
+			}
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error DB Verification: ${e.message}")
+			overallResult = false
+		} finally {
+			if (rsOrders != null) rsOrders.close()
+			if (conn != null) conn.close()
 		}
 
-        // =====================================================
-        // VALIDASI ATRIBUT LAIN (NON-LOT)
-        // =====================================================
-        actualOrders.eachWithIndex { actual, idx ->
-
-            String actualStatusDesc = getOrderStatusDescription(actual.rawStatus)
-
-            boolean stockMatch =
-                actual.stockCode?.equalsIgnoreCase(expectedStockCode)
-
-            boolean priceMatch =
-                expectedPrice == null ||
-                (actual.price != null && actual.price.compareTo(expectedPrice) == 0)
-
-            boolean sideMatch =
-                (expectedSide == 'B' && actual.side == 'BUY') ||
-                (expectedSide == 'S' && actual.side == 'SELL')
-
-            boolean statusMatch =
-                expectedStatuses.contains(actualStatusDesc)
-
-            boolean boardMatch =
-                actual.boardID != null && expectedBoardID.contains(actual.boardID)
-
-            if (stockMatch && priceMatch && sideMatch && statusMatch && boardMatch) {
-                KeywordUtil.logInfo(
-                    "✅ Order #${idx + 1} OK | ID=${actual.ordId}, Lot=${actual.lotAmount}, Status=${actualStatusDesc}"
-                )
-            } else {
-                KeywordUtil.markFailed(
-                    "❌ Order #${idx + 1} GAGAL\n" +
-                    "StockMatch=${stockMatch}, PriceMatch=${priceMatch}, SideMatch=${sideMatch},\n" +
-                    "Status=${actualStatusDesc}, Board=${actual.boardID}"
-                )
-                overallResult = false
-            }
-        }
-
-        if (overallResult) {
-            KeywordUtil.logInfo("🎉 SEMUA SPLIT ORDER TERVERIFIKASI DENGAN BENAR")
-        }
-
-    } catch (Exception e) {
-        KeywordUtil.markFailed("❌ Error DB Verification: ${e.message}")
-        overallResult = false
-    } finally {
-        if (rsOrders != null) rsOrders.close()
-        if (conn != null) conn.close()
-    }
-
-    return overallResult
-}
+		return overallResult
+	}
 
 	@Keyword
 	static boolean verifyLatestSplitOrdersByCount(
@@ -876,7 +990,7 @@ static boolean verifyLatestVariedSplitOrders(
 
 					if (actual.matched) continue
 
-					boolean stockMatch = actual.stockCode.equalsIgnoreCase(expectedStockCode)
+						boolean stockMatch = actual.stockCode.equalsIgnoreCase(expectedStockCode)
 					boolean lotMatch = (expectedLot < 0) || (actual.lotAmount == expectedLot)
 					boolean priceMatch = actual.price.compareTo(expectedPrice) == 0
 					boolean sideMatch = actual.side.equalsIgnoreCase(expectedSide)

@@ -9,32 +9,29 @@ import java.nio.file.Paths
 
 class AppHealth {
 
- 
     @Keyword
     static void verifyAppIsAlive() {
         try {
             String os = Mobile.getDeviceOS()
 
-            if (os == null || os.isEmpty()) {
+            if (!os) {
                 KeywordUtil.markFailedAndStop(
-                        "❌ App Health gagal: Mobile session tidak aktif"
+                    "❌ App Health gagal: Mobile session tidak aktif"
                 )
             }
 
-            KeywordUtil.logInfo("✅ App masih hidup (OS: ${os})")
+            KeywordUtil.logInfo("✅ App masih hidup (session aktif)")
         } catch (Exception e) {
             KeywordUtil.markFailedAndStop(
-                    "❌ Aplikasi CRASH / tidak respons: ${e.message}"
+                "❌ Aplikasi CRASH / tidak respons: ${e.message}"
             )
         }
     }
 
-
     @Keyword
     static boolean observeAppHealth() {
         try {
-            String os = Mobile.getDeviceOS()
-            return (os == null || os.isEmpty())
+            return !Mobile.getDeviceOS()
         } catch (Exception e) {
             return true
         }
@@ -53,22 +50,16 @@ class FreezeDetector {
         while ((System.currentTimeMillis() - start) < timeoutSeconds * 1000) {
 
             String path = System.getProperty("user.dir") +
-                    "/Reports/freeze_${System.currentTimeMillis()}.png"
+                "/Reports/freeze_${System.currentTimeMillis()}.png"
 
-            try {
-                Mobile.takeScreenshot(path)
-            } catch (Exception e) {
-                KeywordUtil.markFailedAndStop(
-                        "❌ CRASH TERDETEKSI: Tidak bisa ambil screenshot (session mati)"
-                )
-            }
+            Mobile.takeScreenshot(path)
 
             byte[] bytes = Files.readAllBytes(Paths.get(path))
-            String hash = md5(bytes)
+            String hash = generateMD5(bytes)
 
             if (hash == lastHash) {
                 KeywordUtil.markFailedAndStop(
-                        "❌ FREEZE TERDETEKSI: UI tidak berubah selama ${checkIntervalSeconds} detik"
+                    "❌ FREEZE TERDETEKSI: UI tidak berubah selama ${checkIntervalSeconds} detik"
                 )
             }
 
@@ -79,16 +70,15 @@ class FreezeDetector {
         KeywordUtil.logInfo("✅ Tidak terdeteksi freeze (STRICT MODE)")
     }
 
-
-   @Keyword
+    @Keyword
     static boolean detectFrozenOrCrashedScreenObserver(
             int timeoutSeconds,
             int checkIntervalSeconds) {
 
-        long startTime = System.currentTimeMillis()
+        long start = System.currentTimeMillis()
         String lastHash = null
 
-        while ((System.currentTimeMillis() - startTime) < timeoutSeconds * 1000) {
+        while ((System.currentTimeMillis() - start) < timeoutSeconds * 1000) {
 
             String path = System.getProperty("user.dir") +
                 "/Reports/freeze_${System.currentTimeMillis()}.png"
@@ -103,16 +93,16 @@ class FreezeDetector {
             }
 
             byte[] bytes = Files.readAllBytes(Paths.get(path))
-            String currentHash = generateMD5(bytes)
+            String hash = generateMD5(bytes)
 
-            if (currentHash == lastHash) {
+            if (hash == lastHash) {
                 KeywordUtil.markWarning(
                     "🧊 FREEZE TERDETEKSI: UI tidak berubah"
                 )
                 return true
             }
 
-            lastHash = currentHash
+            lastHash = hash
             Mobile.delay(checkIntervalSeconds)
         }
 
@@ -120,9 +110,9 @@ class FreezeDetector {
         return false
     }
 
-
     private static String generateMD5(byte[] data) {
         MessageDigest md = MessageDigest.getInstance("MD5")
         return md.digest(data).encodeHex().toString()
     }
 }
+
