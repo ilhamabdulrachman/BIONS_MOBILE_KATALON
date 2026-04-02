@@ -1,5 +1,6 @@
 package com.utilities
 import java.sql.Connection
+import java.sql.*
 import java.sql.DriverManager
 import java.sql.ResultSet
 import com.kms.katalon.core.util.KeywordUtil
@@ -9,20 +10,44 @@ import com.kms.katalon.core.annotation.Keyword
 import java.util.ArrayList
 import java.util.Map
 
+
+
 class OrderVerification {
-
-	// --- 1. KONFIGURASI ORACLE ---
 	private static final String DB_DRIVER = "oracle.jdbc.driver.OracleDriver"
-
-	// --- KONFIGURASI KONEKSI UTAMA (bnisfix) ---
+	// --- KONFIGURASI KONEKSI UTAMA (bnisfix - fodev) ---
 	private static final String DB_URL = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
 	private static final String DB_USER = "bnisfix"
 	private static final String DB_PASS = "sysdev"
 
-	// --- KONFIGURASI KONEKSI ALTERNATIF (bnisfo) ---
-	private static final String DB_URL_ALT = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
-	private static final String DB_USER_ALT = "bnisfo"
-	private static final String DB_PASS_ALT = "sysdev"
+	// --- KONFIGURASI KONEKSI SFO (fodev) ---
+	private static final String DB_URL_SFO = "jdbc:oracle:thin:@192.168.19.19:1521:fodev"
+	private static final String DB_USER_SFO = "bnisfo"
+	private static final String DB_PASS_SFO = "sysdev"
+
+	// --- KONFIGURASI KONEKSI HISTORI (histdev) ---
+	private static final String DB_URL_HIST = "jdbc:oracle:thin:@192.168.19.19:1521:histdev"
+	private static final String DB_USER_HIST = "dbfeed"
+	private static final String DB_PASS_HIST = "sysdev"
+
+	/** * Helper untuk ke database fodev (SFO)
+	 */
+	private static Connection getConnectionSFO() throws Exception {
+		Class.forName(DB_DRIVER)
+		return DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+	}
+
+	/** * Helper untuk ke database histdev (DBFEED)
+	 */
+	private static Connection getConnectionHist() throws Exception {
+        try {
+            Class.forName(DB_DRIVER)
+            return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
+        } catch (ClassNotFoundException e) {
+            throw new Exception("Oracle Driver tidak ditemukan: " + e.getMessage())
+        } catch (SQLException e) {
+            throw new Exception("Gagal koneksi ke HISTDEV: " + e.getMessage())
+        }
+    }
 
 	/**
 	 * Menerjemahkan kode CRO_STATUS
@@ -179,121 +204,103 @@ class OrderVerification {
 
 
 	@Keyword
-	static boolean validateAccountDataIntegrity(String clientCode) {
-	
+	static def showSampleByDate(String tradeDate) {
 		Connection conn = null
+		PreparedStatement pstmt = null
 		ResultSet rs = null
-	
-		String sql = """
-        SELECT 
-            CAC_NAME,
-            CAC_BEGOUTSTANDING,
-            CAC_CURRENTOUTSTANDING,
-            CAC_BEGCASHONHAND,
-            CAC_CURRENTCASHONHAND,
-            CAC_FEEBUY_OLT,
-            CAC_FEESELL_OLT
-        FROM BNISFO.TB_FO_ACCOUNT
-        WHERE CLS_INITIALCODE = ?
-    """
-	
+
+		String query = """
+        SELECT * FROM (
+                SELECT 
+                    TRADE_DATE,
+                    FOREIGN_VOLUME_BUY, FOREIGN_VOLUME_SELL,
+                    FOREIGN_VALUE_BUY, FOREIGN_VALUE_SELL,
+                    DOMESTIC_VOLUME_BUY, DOMESTIC_VOLUME_SELL,
+                    TOTAL_VOLUME, TOTAL_VALUE,
+                    LAST_UPDATED
+                FROM TB_FT_INVESTORACTIVITY
+                WHERE TRADE_DATE = TO_DATE(?,'YYYY-MM-DD')
+                ORDER BY LAST_UPDATED DESC
+            ) WHERE ROWNUM <= 5
+        """
+
 		try {
-			Class.forName(DB_DRIVER)
-			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)
-	
-			def ps = conn.prepareStatement(sql.trim())
-			ps.setString(1, clientCode)
-	
-			rs = ps.executeQuery()
-	
-			if (!rs.next()) {
-				KeywordUtil.markFailed("❌ Data account tidak ditemukan: ${clientCode}")
-				return false
-			}
-	
-			// === AMBIL DATA ===
-			String name = rs.getString("CAC_NAME")
-			BigDecimal begOut = rs.getBigDecimal("CAC_BEGOUTSTANDING")
-			BigDecimal currOut = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
-			BigDecimal begCash = rs.getBigDecimal("CAC_BEGCASHONHAND")
-			BigDecimal currCash = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
-			BigDecimal feeBuy = rs.getBigDecimal("CAC_FEEBUY_OLT")
-			BigDecimal feeSell = rs.getBigDecimal("CAC_FEESELL_OLT")
-	
-			boolean valid = true
-	
-			// ===============================
-			// 🔍 VALIDASI BASIC (NOT NULL)
-			// ===============================
-			if (!name) {
-				KeywordUtil.markFailed("❌ CAC_NAME kosong")
-				valid = false
-			}
-	
-			if (begOut == null || currOut == null || begCash == null || currCash == null) {
-				KeywordUtil.markFailed("❌ Ada field numeric NULL")
-				valid = false
-			}
-	
-			// ===============================
-			// 🔍 VALIDASI NILAI (TIDAK NEGATIF)
-			// ===============================
-			if (currCash?.compareTo(BigDecimal.ZERO) < 0) {
-				KeywordUtil.logInfo("ℹ️ Cash negatif (kemungkinan karena outstanding / settlement)")
-			}
+			conn = getConnection()
+			KeywordUtil.logInfo("🚀 Memulai verifikasi data Foreign Summary untuk tanggal: " + tradeDate)
+			pstmt = conn.prepareStatement(query)
+			pstmt.setString(1, tradeDate)
+			rs = pstmt.executeQuery()
 			
-			// ✅ Outstanding boleh negatif
-			if (currOut?.compareTo(BigDecimal.ZERO) < 0) {
-				KeywordUtil.logInfo("ℹ️ Outstanding negatif (normal setelah BUY)")
+
+			StringBuilder sb = new StringBuilder()
+			int count = 0
+			Timestamp latestUpdated = null
+
+			while (rs.next()) {
+				Date tgl = rs.getDate("TRADE_DATE")
+				Timestamp lastUpdated = rs.getTimestamp("LAST_UPDATED")
+
+				// Ambil data Volume untuk pelaporan singkat
+				long fVolBuy = rs.getLong("FOREIGN_VOLUME_BUY")
+				long fVolSell = rs.getLong("FOREIGN_VOLUME_SELL")
+				long fValBuy = rs.getLong("FOREIGN_VALUE_BUY")
+				long fValSell = rs.getLong("FOREIGN_VALUE_SELL")
+				long fDomBuy = rs.getLong ("DOMESTIC_VOLUME_BUY")
+				long fDomSell = rs.getLong ("DOMESTIC_VOLUME_SELL")
+
+
+				if (latestUpdated == null || (lastUpdated != null && lastUpdated.after(latestUpdated))) {
+					latestUpdated = lastUpdated
+				}
+
+				sb.append("""
+[Data #${count + 1}]
+Date        : ${tgl}
+F. Vol Buy  : ${fVolBuy}
+F. Vol Sell : ${fVolSell}
+F. Val Buy  : ${fValBuy}
+F. Val Sell : ${fValSell}
+F. Dom Buy  : ${fDomBuy}
+F. Dom Sell : ${fDomSell}
+
+Last Update : ${lastUpdated}
+----------------------------------------
+""")
+				count++
 			}
-	
-			// ===============================
-			// 🔍 VALIDASI LOGIKA DATA
-			// ===============================
-			if (currOut?.compareTo(BigDecimal.ZERO) < 0) {
-				KeywordUtil.logInfo("✅ Posisi BUY terdeteksi")
-			} else if (currOut?.compareTo(BigDecimal.ZERO) == 0) {
-				KeywordUtil.logInfo("✅ Tidak ada posisi terbuka")
+
+			if (count == 0) {
+				KeywordUtil.markFailed("❌ Tidak ada data di TB_FT_INVESTORACTIVITY untuk tanggal ${tradeDate}")
 			} else {
-				KeywordUtil.logInfo("ℹ️ Outstanding positif (kemungkinan SELL)")
+				long totalDataMinimal = 1
+				if (count >= totalDataMinimal) {
+					KeywordUtil.markPassed("✅ Verifikasi Sukses: Ditemukan " + count + " data untuk tanggal " + tradeDate)
+				}
+				
+				String logHeader = "🔍 **DETAIL DATA DITEMUKAN** 🔍\n"
+				logHeader += "==========================================\n"
+				logHeader += "🕒 Update Terakhir : " + latestUpdated + "\n"
+				logHeader += "🔢 Total Baris     : " + count + " baris\n"
+				logHeader += "------------------------------------------\n"
+				
+				String logFooter = "\n=========================================="
+				
+				// 3. Cetak ke log
+				KeywordUtil.logInfo(logHeader + sb.toString() + logFooter)
 			}
-	
-			// ===============================
-			// 🔍 VALIDASI FEE (WAJAR)
-			// ===============================
-			if (feeBuy != null && (feeBuy < 0 || feeBuy > 5)) {
-				KeywordUtil.markFailed("❌ Fee Buy tidak wajar: ${feeBuy}")
-				valid = false
-			}
-	
-			if (feeSell != null && (feeSell < 0 || feeSell > 5)) {
-				KeywordUtil.markFailed("❌ Fee Sell tidak wajar: ${feeSell}")
-				valid = false
-			}
-	
-			// ===============================
-			// ✅ HASIL AKHIR
-			// ===============================
-			if (valid) {
-				KeywordUtil.logInfo(
-					"✅ Data ACCOUNT VALID & KONSISTEN\n" +
-					"Name=${name}, BegOut=${begOut}, CurrOut=${currOut},\n" +
-					"BegCash=${begCash}, CurrCash=${currCash},\n" +
-					"FeeBuy=${feeBuy}, FeeSell=${feeSell}"
-				)
-			}
-	
-			return valid
-	
 		} catch (Exception e) {
-			KeywordUtil.markFailed("❌ Error DB: ${e.message}")
-			return false
+			KeywordUtil.markFailed("❌ Gagal eksekusi showSampleByDate: " + e.getMessage())
 		} finally {
 			if (rs != null) rs.close()
+			if (pstmt != null) pstmt.close()
 			if (conn != null) conn.close()
 		}
 	}
-
+	private static Connection getConnection() throws Exception {
+    Class.forName(DB_DRIVER)
+    //return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
+	return DriverManager.getConnection(DB_URL_HIST, "dbfeed", "sysdev")
+}
 	@Keyword
 	static int getStockVolumeFromPortfolio(String clientCode, String stockCode) {
 
@@ -1073,8 +1080,7 @@ class OrderVerification {
 		try {
 			Class.forName(DB_DRIVER)
 
-			conn = DriverManager.getConnection(DB_URL_ALT, DB_USER_ALT, DB_PASS_ALT)
-
+			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
 			def pstmtBond = conn.prepareStatement(sqlBond.trim())
 			pstmtBond.setString(1, clientCode)
 
@@ -1168,8 +1174,7 @@ class OrderVerification {
 		try {
 			Class.forName(DB_DRIVER)
 			// Menggunakan koneksi alternatif BNISFO/BNISBO
-			conn = DriverManager.getConnection(DB_URL_ALT, DB_USER_ALT, DB_PASS_ALT)
-
+			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
 			def pstmtMF = conn.prepareStatement(sqlMF.trim())
 			pstmtMF.setString(1, clientCode)
 
