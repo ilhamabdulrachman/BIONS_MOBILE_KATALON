@@ -26,7 +26,6 @@ import java.time.Duration as Duration
 import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
-import com.utilities.OrderVerification as OrderVerification
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
@@ -41,10 +40,11 @@ if (isMarketOpen) {
         KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
     }
 }
+
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
-String applicationID = 'id.bions.bnis.android.v2'
+String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 
 try {
     Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
@@ -56,9 +56,6 @@ catch (Exception e) {
         FailureHandling.STOP_ON_FAILURE)
 } 
 
-//NetworkChecker.verifyInternetConnection()
-//Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
-//CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'('id.bions.bnis.android.v2')
 Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
@@ -69,15 +66,8 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 start = Instant.now()
 
-Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
+Mobile.tap(findTestObject('Login_V2/login'), 0)
 
-////CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'(
-//	'id.bions.bnis.android.v2')
-//CustomKeywords.'com.utilities.FreezeDetector.detectFrozenScreen'(
-//	5, // total waktu observasi
-//	2   // interval cek
-//)
-//NetworkChecker.verifyInternetConnection()
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
 TcpClient client = new TcpClient()
@@ -93,7 +83,7 @@ client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
 
 // Listen 5 detik untuk capture response login
-client.listen(3)
+client.listen(5)
 
 // 🔌 Tutup koneksi
 client.close()
@@ -112,24 +102,16 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric.PNG')
 
-Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
+Mobile.tap(findTestObject('Login_firebase/use_biometric'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_V2.PNG')
+
+Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1_V2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.tap(findTestObject('Foreign_Summary/See Foreign summary'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary.PNG')
-
-Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary_1.PNG')
-
-CustomKeywords.'com.utilities.OrderVerification.showSampleByDate'('2026-04-06')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login2_V2.PNG')
 
 Mobile.closeApplication()
-
 

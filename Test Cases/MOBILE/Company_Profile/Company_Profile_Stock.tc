@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Company_Profile_Stock</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>3bc91309-c1f5-4731-8dbb-60a513e6e6c5</testCaseGuid>
+</TestCaseEntity>

@@ -28,19 +28,19 @@ import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
 import com.utilities.OrderVerification as OrderVerification
 
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
-
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
-
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
+//boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+//
+//if (isMarketOpen) {
+//    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+//} else {
+//    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//
+//    if (isMarketBreak) {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//    } else {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//    }
+//}
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -65,8 +65,7 @@ Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
-
+//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 start = Instant.now()
 
 Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
@@ -78,8 +77,7 @@ Mobile.tap(findTestObject('TEST_LOGIN/btn_'), 0)
 //	2   // interval cek
 //)
 //NetworkChecker.verifyInternetConnection()
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
-
+//Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 TcpClient client = new TcpClient()
 
 //client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
@@ -93,7 +91,7 @@ client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
 
 // Listen 5 detik untuk capture response login
-client.listen(3)
+client.listen(5)
 
 // 🔌 Tutup koneksi
 client.close()
@@ -111,25 +109,30 @@ def fmt = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric.PNG')
-
 Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric_1.PNG')
+Mobile.tap(findTestObject('More_Menu/More_Menu'), 1)
 
 Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_1.PNG')
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.tap(findTestObject('Screnner/Screener'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_2.PNG')
 
-Mobile.tap(findTestObject('Foreign_Summary/See Foreign summary'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary.PNG')
+Mobile.tap(findTestObject('Screnner/last_price_'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_3.PNG')
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.tap(findTestObject('Screnner/last_price 200-500'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_4.PNG')
 
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary_1.PNG')
+Mobile.tap(findTestObject('Screnner/close_last_price'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_5.PNG')
 
-CustomKeywords.'com.utilities.OrderVerification.showSampleByDate'('2026-04-06')
+Mobile.tap(findTestObject('Screnner/Search_Stock'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_6.PNG')
 
 Mobile.closeApplication()
+
 
 

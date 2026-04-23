@@ -30,17 +30,18 @@ import com.utilities.OrderVerification as OrderVerification
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//if (isMarketOpen) {
+//    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+//} else {
+//    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//
+//    if (isMarketBreak) {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//    } else {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//    }
+//}
 
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -93,7 +94,7 @@ client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
 
 // Listen 5 detik untuk capture response login
-client.listen(3)
+client.listen(5)
 
 // 🔌 Tutup koneksi
 client.close()
@@ -114,22 +115,46 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 
 Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
 
-Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric_1.PNG')
+
+Mobile.tap(findTestObject('More_Menu/More_'), 1)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_1.PNG')
+
+Mobile.tap(findTestObject('Stock_dashboard/Dashboard_'), 1)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_2.PNG')
+
+Mobile.tap(findTestObject('Company_Profile/android.view.Vbroker'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_3.PNG')
+
+Mobile.tap(findTestObject('Company_Profile/android.view.VNews'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_4.PNG')
+
+Mobile.tap(findTestObject('Company_Profile/android.view.Vprofile'), 0)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_5.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_6.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
-
-Mobile.tap(findTestObject('Foreign_Summary/See Foreign summary'), 0)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary.PNG')
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_7.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_8.PNG')
 
-Mobile.delay(2, FailureHandling.STOP_ON_FAILURE)
-Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Foreign_Summary_1.PNG')
+Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_9.PNG')
 
-CustomKeywords.'com.utilities.OrderVerification.showSampleByDate'('2026-04-06')
+Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_10.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_11.PNG')
+
+Mobile.swipe(500, 1500, 500, 500)
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/More_12.PNG')
 
 Mobile.closeApplication()
-
 

@@ -39,15 +39,15 @@ class OrderVerification {
 	/** * Helper untuk ke database histdev (DBFEED)
 	 */
 	private static Connection getConnectionHist() throws Exception {
-        try {
-            Class.forName(DB_DRIVER)
-            return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
-        } catch (ClassNotFoundException e) {
-            throw new Exception("Oracle Driver tidak ditemukan: " + e.getMessage())
-        } catch (SQLException e) {
-            throw new Exception("Gagal koneksi ke HISTDEV: " + e.getMessage())
-        }
-    }
+		try {
+			Class.forName(DB_DRIVER)
+			return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
+		} catch (ClassNotFoundException e) {
+			throw new Exception("Oracle Driver tidak ditemukan: " + e.getMessage())
+		} catch (SQLException e) {
+			throw new Exception("Gagal koneksi ke HISTDEV: " + e.getMessage())
+		}
+	}
 
 	/**
 	 * Menerjemahkan kode CRO_STATUS
@@ -230,7 +230,7 @@ class OrderVerification {
 			pstmt = conn.prepareStatement(query)
 			pstmt.setString(1, tradeDate)
 			rs = pstmt.executeQuery()
-			
+
 
 			StringBuilder sb = new StringBuilder()
 			int count = 0
@@ -276,15 +276,15 @@ Last Update : ${lastUpdated}
 				if (count >= totalDataMinimal) {
 					KeywordUtil.markPassed("✅ Verifikasi Sukses: Ditemukan " + count + " data untuk tanggal " + tradeDate)
 				}
-				
+
 				String logHeader = "🔍 **DETAIL DATA DITEMUKAN** 🔍\n"
 				logHeader += "==========================================\n"
 				logHeader += "🕒 Update Terakhir : " + latestUpdated + "\n"
 				logHeader += "🔢 Total Baris     : " + count + " baris\n"
 				logHeader += "------------------------------------------\n"
-				
+
 				String logFooter = "\n=========================================="
-				
+
 				// 3. Cetak ke log
 				KeywordUtil.logInfo(logHeader + sb.toString() + logFooter)
 			}
@@ -297,10 +297,10 @@ Last Update : ${lastUpdated}
 		}
 	}
 	private static Connection getConnection() throws Exception {
-    Class.forName(DB_DRIVER)
-    //return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
-	return DriverManager.getConnection(DB_URL_HIST, "dbfeed", "sysdev")
-}
+		Class.forName(DB_DRIVER)
+		//return DriverManager.getConnection(DB_URL_HIST, DB_USER_HIST, DB_PASS_HIST)
+		return DriverManager.getConnection(DB_URL_HIST, "dbfeed", "sysdev")
+	}
 	@Keyword
 	static int getStockVolumeFromPortfolio(String clientCode, String stockCode) {
 
