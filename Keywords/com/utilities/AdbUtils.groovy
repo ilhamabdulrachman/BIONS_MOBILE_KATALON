@@ -173,7 +173,7 @@ class AdbUtils {
 		}
 		return request
 	}
-	
+
 	@Keyword
 	def static String runAdbCommand(String adbCommand) {
 		String output = ''
@@ -197,7 +197,6 @@ class AdbUtils {
 
 			KeywordUtil.logInfo("Perintah ADB: " + adbCommand)
 			KeywordUtil.logInfo("Output: " + output)
-
 		} catch (Exception e) {
 			KeywordUtil.logError("Gagal menjalankan perintah ADB: " + e.getMessage())
 			output = ''
@@ -208,6 +207,4 @@ class AdbUtils {
 		}
 		return output
 	}
-	
-	
 }

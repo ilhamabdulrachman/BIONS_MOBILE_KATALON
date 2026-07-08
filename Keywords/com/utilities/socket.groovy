@@ -173,29 +173,29 @@ class socket {
 		return request
 	}
 
-	
+
 	class TcpClient {
 		Socket socket
 		BufferedReader reader
 		PrintWriter writer
-	
+
 		def connect(String host, int port) {
 			try {
 				socket = new Socket(host, port)
 				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))
 				writer = new PrintWriter(socket.getOutputStream(), true)
-	
+
 				KeywordUtil.logInfo("✅ Connected to TCP socket ${host}:${port}")
 			} catch (Exception e) {
 				KeywordUtil.markFailed("❌ Connection failed: " + e.message)
 			}
 		}
-	
+
 		def sendMessage(String message) {
 			try {
 				writer.println(message)
 				KeywordUtil.logInfo("📤 Sent: " + message)
-	
+
 				String response = reader.readLine()
 				KeywordUtil.logInfo("📩 Received: " + response)
 				return response
@@ -203,7 +203,7 @@ class socket {
 				KeywordUtil.markFailed("❌ Send/Receive failed: " + e.message)
 			}
 		}
-	
+
 		def close() {
 			try {
 				socket.close()
@@ -213,5 +213,4 @@ class socket {
 			}
 		}
 	}
-	
 }

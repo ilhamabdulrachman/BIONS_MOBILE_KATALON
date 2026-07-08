@@ -14,7 +14,6 @@ import java.math.BigDecimal
 def clientID = '1B029'
 def expectedBondCode = 'INDAH0105'
 def expectedNominal = new BigDecimal('1000000')
-// Asumsi Price: Harap ganti 100 dengan harga aktual yang Anda masukkan atau baca dari UI
 def expectedPrice = new BigDecimal('101')
 
 def expectedStatuses = ['CONFIRMED', 'PROCCESING' , 'REJECT'] 
