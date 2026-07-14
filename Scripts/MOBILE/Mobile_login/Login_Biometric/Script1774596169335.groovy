@@ -59,11 +59,11 @@ catch (Exception e) {
 //NetworkChecker.verifyInternetConnection()
 //Mobile.tap(findTestObject('TEST_LOGIN/skip_onboarding'), 0)
 //CustomKeywords.'com.utilities.AppHealth.verifyAppIsAlive'('id.bions.bnis.android.v2')
-Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 

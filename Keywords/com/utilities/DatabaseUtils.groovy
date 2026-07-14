@@ -150,6 +150,215 @@ class OrderVerification {
 		}
 	}
 
+	@Keyword
+	static boolean validateAccountDataIntegrity(
+			String clientCode,
+			String expectedName,
+			BigDecimal expectedFeeBuy,
+			BigDecimal expectedFeeSell,
+			String expectedBankRDI,
+			String expectedInvAccNo,
+			BigDecimal expectedCashOnHand,
+			BigDecimal expectedBegOutstanding,
+			BigDecimal expectedCurrentOutstanding
+	) {
+		Connection conn = null
+		ResultSet rs = null
+
+		String sql = """
+        SELECT
+            CAC_NAME,
+            CAC_FEEBUY_OLT,
+            CAC_FEESELL_OLT,
+            BANKRDI,
+            CAC_INVACCNO,
+            CAC_CURRENTCASHONHAND,
+            CAC_BEGOUTSTANDING,
+            CAC_CURRENTOUTSTANDING
+        FROM BNISFO.TB_FO_ACCOUNT
+        WHERE CLS_INITIALCODE = ?
+    """
+
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+
+			def pstmt = conn.prepareStatement(sql.trim())
+			pstmt.setString(1, clientCode)
+			rs = pstmt.executeQuery()
+
+			if (!rs.next()) {
+				KeywordUtil.markFailed("❌ Tidak ditemukan data akun di TB_FO_ACCOUNT untuk Client Code: ${clientCode}")
+				return false
+			}
+
+			// --- Ambil data aktual dari DB ---
+			String actualName            = rs.getString("CAC_NAME")
+			BigDecimal actualFeeBuy      = rs.getBigDecimal("CAC_FEEBUY_OLT")
+			BigDecimal actualFeeSell     = rs.getBigDecimal("CAC_FEESELL_OLT")
+			String actualBankRDI         = rs.getString("BANKRDI")
+			String actualInvAccNo        = rs.getString("CAC_INVACCNO")
+			BigDecimal actualCashOnHand  = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
+			BigDecimal actualBegOutstanding     = rs.getBigDecimal("CAC_BEGOUTSTANDING")
+			BigDecimal actualCurrentOutstanding = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
+
+			// --- Pencocokan tiap field ---
+			boolean nameMatch       = actualName?.trim()?.equalsIgnoreCase(expectedName?.trim())
+			boolean feeBuyMatch     = expectedFeeBuy == null || actualFeeBuy?.compareTo(expectedFeeBuy) == 0
+			boolean feeSellMatch    = expectedFeeSell == null || actualFeeSell?.compareTo(expectedFeeSell) == 0
+			boolean bankRDIMatch    = actualBankRDI?.trim()?.equalsIgnoreCase(expectedBankRDI?.trim())
+			boolean invAccNoMatch   = actualInvAccNo?.trim()?.equalsIgnoreCase(expectedInvAccNo?.trim())
+			boolean cashMatch       = expectedCashOnHand == null || actualCashOnHand?.compareTo(expectedCashOnHand) == 0
+			boolean begOutMatch     = expectedBegOutstanding == null || actualBegOutstanding?.compareTo(expectedBegOutstanding) == 0
+			boolean curOutMatch     = expectedCurrentOutstanding == null || actualCurrentOutstanding?.compareTo(expectedCurrentOutstanding) == 0
+
+			boolean allMatch = nameMatch && feeBuyMatch && feeSellMatch && bankRDIMatch &&
+					invAccNoMatch && cashMatch && begOutMatch && curOutMatch
+
+			if (allMatch) {
+				KeywordUtil.logInfo("✅ Verifikasi Account Data Integrity BERHASIL untuk Client: ${clientCode}")
+				KeywordUtil.logInfo(
+						"[Account] Name=${actualName}, FeeBuy=${actualFeeBuy}%, FeeSell=${actualFeeSell}%, " +
+						"RDN=${actualBankRDI}, SRE=${actualInvAccNo}, " +
+						"CashOnHand=${actualCashOnHand}, BegOutstanding=${actualBegOutstanding}, " +
+						"CurrentOutstanding=${actualCurrentOutstanding}"
+						)
+				return true
+			} else {
+				KeywordUtil.markFailed("❌ Verifikasi Account Data Integrity GAGAL untuk Client: ${clientCode}")
+				KeywordUtil.logError("	Name       -> Expected: ${expectedName}, Actual: ${actualName}, Match: ${nameMatch}")
+				KeywordUtil.logError("	FeeBuy     -> Expected: ${expectedFeeBuy}, Actual: ${actualFeeBuy}, Match: ${feeBuyMatch}")
+				KeywordUtil.logError("	FeeSell    -> Expected: ${expectedFeeSell}, Actual: ${actualFeeSell}, Match: ${feeSellMatch}")
+				KeywordUtil.logError("	BankRDI    -> Expected: ${expectedBankRDI}, Actual: ${actualBankRDI}, Match: ${bankRDIMatch}")
+				KeywordUtil.logError("	InvAccNo   -> Expected: ${expectedInvAccNo}, Actual: ${actualInvAccNo}, Match: ${invAccNoMatch}")
+				KeywordUtil.logError("	CashOnHand -> Expected: ${expectedCashOnHand}, Actual: ${actualCashOnHand}, Match: ${cashMatch}")
+				KeywordUtil.logError("	BegOutstanding -> Expected: ${expectedBegOutstanding}, Actual: ${actualBegOutstanding}, Match: ${begOutMatch}")
+				KeywordUtil.logError("	CurrentOutstanding -> Expected: ${expectedCurrentOutstanding}, Actual: ${actualCurrentOutstanding}, Match: ${curOutMatch}")
+				return false
+			}
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada validateAccountDataIntegrity. Pesan Error: " + e.getMessage())
+			return false
+		} finally {
+			if (rs != null) rs.close()
+			if (conn != null) conn.close()
+		}
+	}
+
+	@Keyword
+static boolean checkAccountDataExists(String accountAlias) {
+    Connection conn = null
+    ResultSet rs = null
+
+    String sql = """
+        SELECT
+            CAC_NAME,
+            CAC_ALIAS,
+            CLS_INITIALCODE,
+            CAC_FEEBUY_OLT,
+            CAC_FEESELL_OLT,
+            BANKRDI,
+            CAC_INVACCNO,
+            CAC_CURRENTCASHONHAND,
+            CAC_BEGOUTSTANDING,
+            CAC_CURRENTOUTSTANDING
+        FROM BNISFO.TB_FO_ACCOUNT
+        WHERE CAC_ALIAS = ?
+    """
+
+    try {
+        Class.forName(DB_DRIVER)
+        conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+
+        def pstmt = conn.prepareStatement(sql.trim())
+        pstmt.setString(1, accountAlias)
+        rs = pstmt.executeQuery()
+
+        if (!rs.next()) {
+            KeywordUtil.markFailed("❌ Tidak ditemukan data akun untuk Alias: ${accountAlias}")
+            return false
+        }
+
+        // --- Ambil data aktual dari DB ---
+        String name              = rs.getString("CAC_NAME")
+        String alias             = rs.getString("CAC_ALIAS")
+        String clientCode        = rs.getString("CLS_INITIALCODE")
+        BigDecimal feeBuy        = rs.getBigDecimal("CAC_FEEBUY_OLT")
+        BigDecimal feeSell       = rs.getBigDecimal("CAC_FEESELL_OLT")
+        String bankRDI           = rs.getString("BANKRDI")
+        String invAccNo          = rs.getString("CAC_INVACCNO")
+        BigDecimal cashOnHand    = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
+        BigDecimal begOutstanding     = rs.getBigDecimal("CAC_BEGOUTSTANDING")
+        BigDecimal currentOutstanding = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
+
+        List<String> issues = []
+
+        // --- Validasi Data Tidak Null / Tidak Kosong ---
+        if (!name || name.trim().isEmpty()) {
+            issues << "CAC_NAME kosong/null"
+        }
+        if (!clientCode || clientCode.trim().isEmpty()) {
+            issues << "CLS_INITIALCODE kosong/null"
+        }
+        if (feeBuy == null) {
+            issues << "CAC_FEEBUY_OLT null"
+        }
+        if (feeSell == null) {
+            issues << "CAC_FEESELL_OLT null"
+        }
+        if (!bankRDI || bankRDI.trim().isEmpty()) {
+            issues << "BANKRDI (RDN) kosong/null"
+        }
+        if (!invAccNo || invAccNo.trim().isEmpty()) {
+            issues << "CAC_INVACCNO (SRE) kosong/null"
+        }
+        if (cashOnHand == null) {
+            issues << "CAC_CURRENTCASHONHAND null"
+        }
+        if (currentOutstanding == null) {
+            issues << "CAC_CURRENTOUTSTANDING null"
+        }
+
+        // --- Validasi Nilai Masuk Akal (Sanity Check) ---
+        if (feeBuy != null && (feeBuy.compareTo(BigDecimal.ZERO) < 0 || feeBuy.compareTo(new BigDecimal("100")) > 0)) {
+            issues << "CAC_FEEBUY_OLT tidak masuk akal: ${feeBuy}%"
+        }
+        if (feeSell != null && (feeSell.compareTo(BigDecimal.ZERO) < 0 || feeSell.compareTo(new BigDecimal("100")) > 0)) {
+            issues << "CAC_FEESELL_OLT tidak masuk akal: ${feeSell}%"
+        }
+
+        if (issues.isEmpty()) {
+            KeywordUtil.logInfo("✅ Data Akun '${alias}' DITEMUKAN & VALID (Client: ${clientCode})")
+            KeywordUtil.logInfo(
+                    "[Account] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
+                    "FeeBuy=${feeBuy}%, FeeSell=${feeSell}%, " +
+                    "RDN=${bankRDI}, SRE=${invAccNo}, " +
+                    "CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
+                    "CurrentOutstanding=${currentOutstanding}"
+            )
+            return true
+        } else {
+            KeywordUtil.markFailed("❌ Data Akun '${accountAlias}' DITEMUKAN tetapi TIDAK LENGKAP/VALID")
+            issues.each { issue ->
+                KeywordUtil.logError("	⚠️ ${issue}")
+            }
+            KeywordUtil.logError(
+                    "[Data Aktual] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
+                    "FeeBuy=${feeBuy}, FeeSell=${feeSell}, " +
+                    "RDN=${bankRDI}, SRE=${invAccNo}, " +
+                    "CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
+                    "CurrentOutstanding=${currentOutstanding}"
+            )
+            return false
+        }
+    } catch (Exception e) {
+        KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada checkAccountDataExists. Pesan Error: " + e.getMessage())
+        return false
+    } finally {
+        if (rs != null) rs.close()
+        if (conn != null) conn.close()
+    }
+}
 
 	@Keyword
 	static boolean waitUntilPortfolioDelta(
