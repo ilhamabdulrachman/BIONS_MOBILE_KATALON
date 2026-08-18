@@ -56,11 +56,11 @@ catch (Exception e) {
         FailureHandling.STOP_ON_FAILURE)
 } 
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), '1B029', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PASSWORD', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -73,14 +73,14 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 TcpClient client = new TcpClient()
 
 //client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
-client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
+client.connect('REDACTED_PROD_HOST', 62229 // FEED_SERVER_1
     )
 
 //  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
 // )
 // Kirim login
 //client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+client.sendMessage('{ "action":"login", "user":"REDACTED_USERID", "password":"REDACTED_PIN" }')
 
 // Listen 5 detik untuk capture response login
 client.listen(5)

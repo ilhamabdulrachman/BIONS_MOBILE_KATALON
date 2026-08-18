@@ -102,7 +102,7 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric.PNG')
 
-//Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
+Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
 //
 //Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_V2.PNG')
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Happy path: log in to CURA, book an appointment with valid values, and verify the confirmation summary.</description>
+   <name>TC02_Book_Appointment_And_Verify_Confirmation</name>
+   <tag>GenAI</tag>
+   <comment></comment>
+   <origin>STUDIOASSIST</origin>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>7124a036-4e30-4ae7-881c-67641922a0ba</testCaseGuid>
+</TestCaseEntity>

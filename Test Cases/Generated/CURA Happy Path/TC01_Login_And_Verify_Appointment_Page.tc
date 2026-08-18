@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Happy path: open CURA, log in with demo credentials, and verify the appointment form is displayed.</description>
+   <name>TC01_Login_And_Verify_Appointment_Page</name>
+   <tag>GenAI</tag>
+   <comment></comment>
+   <origin>STUDIOASSIST</origin>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>e3ddd251-91ac-4eb5-8685-2f6557fddcb3</testCaseGuid>
+</TestCaseEntity>

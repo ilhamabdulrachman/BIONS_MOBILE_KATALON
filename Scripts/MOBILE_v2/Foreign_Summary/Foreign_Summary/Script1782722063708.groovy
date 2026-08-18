@@ -75,26 +75,20 @@ Mobile.tap(findTestObject('Login_V2/login'), 0)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
 TcpClient client = new TcpClient()
-
-client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
-    //client.connect('REDACTED_PROD_HOST', 62229 // FEED_SERVER_1
-    )
-
-//  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
-// )
-// Kirim login
-//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
+client.connect('REDACTED_INTERNAL_IP', 62229)   // FEED_SERVER_1
 client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
-
-// Listen 5 detik untuk capture response login
 client.listen(3)
 
-// 🔌 Tutup koneksi
+if (client.hasResponse()) {
+    KeywordUtil.logInfo("📩 Response TCP diterima: " + client.getAllResponses())
+} else {
+    KeywordUtil.logInfo("ℹ️ Tidak ada response dari TCP feed server (server bersifat one-way/broadcast)")
+}
 client.close()
 
 end = Instant.now()
 
-seconds = (Duration.between(start, end).toMillis() / 10000.0)
+double seconds = (Duration.between(start, end).toMillis() / 1000.0)
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
@@ -132,7 +126,7 @@ Mobile.swipe(500, 1500, 500, 500)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/explored_5.PNG')
 
-CustomKeywords.'com.utilities.OrderVerification.showSampleByDate'('2026-06-29')
+CustomKeywords.'com.utilities.OrderVerification.showSampleByDate'('2026-08-04')
 
 Mobile.closeApplication()
 

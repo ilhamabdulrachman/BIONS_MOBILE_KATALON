@@ -6,12 +6,11 @@
    <UUID>06595fff-4a32-46ad-b90c-c1b5dd6ef703</UUID>
    <createdEdition>FREE</createdEdition>
    <createdVersion>10.0.1</createdVersion>
-   <freeLicense>true</freeLicense>
+   <freeLicense>false</freeLicense>
    <migratedVersion>5.9.0</migratedVersion>
-   <modifiedEdition>FREE</modifiedEdition>
-   <modifiedVersion>10.0.1</modifiedVersion>
+   <modifiedEdition>ENTERPRISE</modifiedEdition>
+   <modifiedVersion>11.4.0</modifiedVersion>
    <pageLoadTimeout>0</pageLoadTimeout>
-   <projectFileLocation>/Users/bionsrevamp/Katalon Studio/Bions__/Bions__.prj</projectFileLocation>
    <sourceContent>
       <sourceFolderList>
          <sourceFolderConfiguration>

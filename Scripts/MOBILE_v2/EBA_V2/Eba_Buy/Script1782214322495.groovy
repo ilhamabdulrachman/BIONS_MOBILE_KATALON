@@ -27,7 +27,6 @@ import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
 import java.math.BigDecimal as BigDecimal
-import java.math.BigDecimal
 
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
@@ -43,16 +42,17 @@ def expectedPrice = new BigDecimal('101')
 def expectedStatuses = ['CONFIRMED', 'PROCESSING', 'REJECT']
 
 if (isMarketOpen) {
-	KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-	boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
 
-	if (isMarketBreak) {
-		KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-	} else {
-		KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-	}
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
+
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -82,27 +82,32 @@ Mobile.tap(findTestObject('Login_V2/login'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
+start = Instant.now()
+
+Mobile.tap(findTestObject('Login_V2/login'), 0)
+
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
+
 TcpClient client = new TcpClient()
 
-//client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
     )
 
-//  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
-// )
-// Kirim login
-//client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
 client.sendMessage('{ "action":"login", "user":"1B029", "password":"q" }')
 
-// Listen 5 detik untuk capture response login
-client.listen(5)
+client.listen(3)
 
-// 🔌 Tutup koneksi
+if (client.hasResponse()) {
+    KeywordUtil.logInfo('📩 Response TCP diterima: ' + client.getAllResponses())
+} else {
+    KeywordUtil.logInfo('ℹ️ Tidak ada response dari TCP feed server (server bersifat one-way/broadcast)')
+}
+
 client.close()
 
 end = Instant.now()
 
-seconds = (Duration.between(start, end).toMillis() / 10000.0)
+double seconds = Duration.between(start, end).toMillis() / 1000.0
 
 KeywordUtil.logInfo("⏱️ Waktu login sampai dashboard: $seconds detik")
 
@@ -117,8 +122,7 @@ Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/2025080
 //Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
 //
 //Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_V2.PNG')
-
-Mobile.tap(findTestObject('Eba_V2/Eba_V2'), 0)
+Mobile.tap(findTestObject('Eba_V2/Eba_V2_'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/EBA_V2_1.PNG')
 
@@ -152,28 +156,16 @@ Mobile.tap(findTestObject('Eba_V2/View_Orderlist'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/EBA_V2_8.PNG')
 
+KeywordUtil.logInfo('Memulai Verifikasi Database untuk TB_FO_BONDTRANSACTION...')
 
-KeywordUtil.logInfo("Memulai Verifikasi Database untuk TB_FO_BONDTRANSACTION...")
-
-
-boolean bondResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestBondTransaction'(
-	clientID,
-	expectedBondCode,
-	expectedNominal,
-	expectedPrice,
-	expectedStatuses,
-	null,  
-	null
-	
-)
+boolean bondResult = CustomKeywords.'com.utilities.OrderVerification.verifyLatestBondTransaction'(clientID, expectedBondCode, 
+    expectedNominal, expectedPrice, expectedStatuses, null, null)
 
 if (bondResult) {
-	KeywordUtil.markPassed("✅ Verifikasi DB Bond Transaksi Berhasil: Data order ${expectedBondCode} ditemukan di database dengan status yang diharapkan.")
+    KeywordUtil.markPassed("✅ Verifikasi DB Bond Transaksi Berhasil: Data order $expectedBondCode ditemukan di database dengan status yang diharapkan.")
 } else {
-	KeywordUtil.markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Cek log error Custom Keyword.")
+    KeywordUtil.markFailed('❌ Verifikasi DB Bond Transaksi GAGAL. Cek log error Custom Keyword.')
 }
 
 Mobile.closeApplication()
-
-
 

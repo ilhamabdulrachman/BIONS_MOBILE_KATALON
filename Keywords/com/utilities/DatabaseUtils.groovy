@@ -28,6 +28,11 @@ class OrderVerification {
 	private static final String DB_URL_HIST = "jdbc:oracle:thin:@192.168.19.19:1521:histdev"
 	private static final String DB_USER_HIST = "dbfeed"
 	private static final String DB_PASS_HIST = "sysdev"
+	
+	// --- KONFIGURASI KONEKSI DBFEED (FEEDDEV) ---
+	private static final String DB_URL_feed = "jdbc:oracle:thin:@192.168.19.19:1521:feeddev"
+	private static final String DB_USER_feed = "dbfeed"
+	private static final String DB_PASS_feed = "sysdev"
 
 	/** * Helper untuk ke database fodev (SFO)
 	 */
@@ -123,7 +128,7 @@ class OrderVerification {
 			case 'CR':
 				return 'CONFIRMED'
 			case 'RQ':
-				return 'PROCCESING'
+				return 'PROCESSING'
 			case 'RJ':
 				return 'REJECT'
 			default:
@@ -147,6 +152,17 @@ class OrderVerification {
 				return 'Rejected'
 			default:
 				return "Unknown MF Status (${statusCode})"
+		}
+	}
+
+	private static String getSBNOrderStatusDescription(String statusCode) {
+		switch (statusCode) {
+			case 'CP':
+				return 'Complete'
+			case 'RQ':
+				return 'Request'
+			default:
+				return "Unknown SBN Status (${statusCode})"
 		}
 	}
 
@@ -246,11 +262,11 @@ class OrderVerification {
 	}
 
 	@Keyword
-static boolean checkAccountDataExists(String accountAlias) {
-    Connection conn = null
-    ResultSet rs = null
+	static boolean checkAccountDataExists(String accountAlias) {
+		Connection conn = null
+		ResultSet rs = null
 
-    String sql = """
+		String sql = """
         SELECT
             CAC_NAME,
             CAC_ALIAS,
@@ -266,99 +282,523 @@ static boolean checkAccountDataExists(String accountAlias) {
         WHERE CAC_ALIAS = ?
     """
 
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+
+			def pstmt = conn.prepareStatement(sql.trim())
+			pstmt.setString(1, accountAlias)
+			rs = pstmt.executeQuery()
+
+			if (!rs.next()) {
+				KeywordUtil.markFailed("❌ Tidak ditemukan data akun untuk Alias: ${accountAlias}")
+				return false
+			}
+
+			// --- Ambil data aktual dari DB ---
+			String name              = rs.getString("CAC_NAME")
+			String alias             = rs.getString("CAC_ALIAS")
+			String clientCode        = rs.getString("CLS_INITIALCODE")
+			BigDecimal feeBuy        = rs.getBigDecimal("CAC_FEEBUY_OLT")
+			BigDecimal feeSell       = rs.getBigDecimal("CAC_FEESELL_OLT")
+			String bankRDI           = rs.getString("BANKRDI")
+			String invAccNo          = rs.getString("CAC_INVACCNO")
+			BigDecimal cashOnHand    = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
+			BigDecimal begOutstanding     = rs.getBigDecimal("CAC_BEGOUTSTANDING")
+			BigDecimal currentOutstanding = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
+
+			List<String> issues = []
+
+			// --- Validasi Data Tidak Null / Tidak Kosong ---
+			if (!name || name.trim().isEmpty()) {
+				issues << "CAC_NAME kosong/null"
+			}
+			if (!clientCode || clientCode.trim().isEmpty()) {
+				issues << "CLS_INITIALCODE kosong/null"
+			}
+			if (feeBuy == null) {
+				issues << "CAC_FEEBUY_OLT null"
+			}
+			if (feeSell == null) {
+				issues << "CAC_FEESELL_OLT null"
+			}
+			if (!bankRDI || bankRDI.trim().isEmpty()) {
+				issues << "BANKRDI (RDN) kosong/null"
+			}
+			if (!invAccNo || invAccNo.trim().isEmpty()) {
+				issues << "CAC_INVACCNO (SRE) kosong/null"
+			}
+			if (cashOnHand == null) {
+				issues << "CAC_CURRENTCASHONHAND null"
+			}
+			if (currentOutstanding == null) {
+				issues << "CAC_CURRENTOUTSTANDING null"
+			}
+
+			// --- Validasi Nilai Masuk Akal (Sanity Check) ---
+			if (feeBuy != null && (feeBuy.compareTo(BigDecimal.ZERO) < 0 || feeBuy.compareTo(new BigDecimal("100")) > 0)) {
+				issues << "CAC_FEEBUY_OLT tidak masuk akal: ${feeBuy}%"
+			}
+			if (feeSell != null && (feeSell.compareTo(BigDecimal.ZERO) < 0 || feeSell.compareTo(new BigDecimal("100")) > 0)) {
+				issues << "CAC_FEESELL_OLT tidak masuk akal: ${feeSell}%"
+			}
+
+			if (issues.isEmpty()) {
+				KeywordUtil.logInfo("✅ Data Akun '${alias}' DITEMUKAN & VALID (Client: ${clientCode})")
+				KeywordUtil.logInfo(
+						"[Account] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
+						"FeeBuy=${feeBuy}%, FeeSell=${feeSell}%, " +
+						"RDN=${bankRDI}, SRE=${invAccNo}, " +
+						"CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
+						"CurrentOutstanding=${currentOutstanding}"
+						)
+				return true
+			} else {
+				KeywordUtil.markFailed("❌ Data Akun '${accountAlias}' DITEMUKAN tetapi TIDAK LENGKAP/VALID")
+				issues.each { issue ->
+					KeywordUtil.logError("	⚠️ ${issue}")
+				}
+				KeywordUtil.logError(
+						"[Data Aktual] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
+						"FeeBuy=${feeBuy}, FeeSell=${feeSell}, " +
+						"RDN=${bankRDI}, SRE=${invAccNo}, " +
+						"CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
+						"CurrentOutstanding=${currentOutstanding}"
+						)
+				return false
+			}
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada checkAccountDataExists. Pesan Error: " + e.getMessage())
+			return false
+		} finally {
+			if (rs != null) rs.close()
+			if (conn != null) conn.close()
+		}
+	}
+	
+	
+	@Keyword
+static int listAllStockFavoriteWithGroupName(String clientCode) {
+    Connection conn = null
+    ResultSet rs = null
+
+    String sql = """
+        SELECT 
+            f.STOCK,
+            f.GROUPID,
+            f.ENTRYDATE AS FAVORITE_ENTRYDATE,
+            g.NAME AS GROUP_NAME,
+            g.ENTRYDATE AS GROUP_ENTRYDATE
+        FROM DBFEED.TB_FO_STOCKFAVORITE f
+        LEFT JOIN DBFEED.TB_FO_STOCKFAVORITEGROUP g
+            ON f.GROUPID = g.ID
+            AND f.USR = g.USR
+        WHERE f.USR = ?
+        ORDER BY g.NAME, f.ENTRYDATE DESC
+    """
+
     try {
         Class.forName(DB_DRIVER)
-        conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+        conn = DriverManager.getConnection(DB_URL_feed, DB_USER_feed, DB_PASS_feed)
 
         def pstmt = conn.prepareStatement(sql.trim())
-        pstmt.setString(1, accountAlias)
+        pstmt.setString(1, clientCode)
         rs = pstmt.executeQuery()
 
-        if (!rs.next()) {
-            KeywordUtil.markFailed("❌ Tidak ditemukan data akun untuk Alias: ${accountAlias}")
-            return false
+        List<Map> favoriteList = []
+
+        while (rs.next()) {
+            favoriteList.add([
+                stock       : rs.getString("STOCK"),
+                groupId     : rs.getString("GROUPID"),
+                groupName   : rs.getString("GROUP_NAME"),
+                entryDate   : rs.getString("FAVORITE_ENTRYDATE")
+            ])
         }
 
-        // --- Ambil data aktual dari DB ---
-        String name              = rs.getString("CAC_NAME")
-        String alias             = rs.getString("CAC_ALIAS")
-        String clientCode        = rs.getString("CLS_INITIALCODE")
-        BigDecimal feeBuy        = rs.getBigDecimal("CAC_FEEBUY_OLT")
-        BigDecimal feeSell       = rs.getBigDecimal("CAC_FEESELL_OLT")
-        String bankRDI           = rs.getString("BANKRDI")
-        String invAccNo          = rs.getString("CAC_INVACCNO")
-        BigDecimal cashOnHand    = rs.getBigDecimal("CAC_CURRENTCASHONHAND")
-        BigDecimal begOutstanding     = rs.getBigDecimal("CAC_BEGOUTSTANDING")
-        BigDecimal currentOutstanding = rs.getBigDecimal("CAC_CURRENTOUTSTANDING")
+        int total = favoriteList.size()
 
-        List<String> issues = []
-
-        // --- Validasi Data Tidak Null / Tidak Kosong ---
-        if (!name || name.trim().isEmpty()) {
-            issues << "CAC_NAME kosong/null"
-        }
-        if (!clientCode || clientCode.trim().isEmpty()) {
-            issues << "CLS_INITIALCODE kosong/null"
-        }
-        if (feeBuy == null) {
-            issues << "CAC_FEEBUY_OLT null"
-        }
-        if (feeSell == null) {
-            issues << "CAC_FEESELL_OLT null"
-        }
-        if (!bankRDI || bankRDI.trim().isEmpty()) {
-            issues << "BANKRDI (RDN) kosong/null"
-        }
-        if (!invAccNo || invAccNo.trim().isEmpty()) {
-            issues << "CAC_INVACCNO (SRE) kosong/null"
-        }
-        if (cashOnHand == null) {
-            issues << "CAC_CURRENTCASHONHAND null"
-        }
-        if (currentOutstanding == null) {
-            issues << "CAC_CURRENTOUTSTANDING null"
+        if (total == 0) {
+            KeywordUtil.logInfo("ℹ️ Client ${clientCode} belum memiliki Stock Favorite sama sekali.")
+            return 0
         }
 
-        // --- Validasi Nilai Masuk Akal (Sanity Check) ---
-        if (feeBuy != null && (feeBuy.compareTo(BigDecimal.ZERO) < 0 || feeBuy.compareTo(new BigDecimal("100")) > 0)) {
-            issues << "CAC_FEEBUY_OLT tidak masuk akal: ${feeBuy}%"
-        }
-        if (feeSell != null && (feeSell.compareTo(BigDecimal.ZERO) < 0 || feeSell.compareTo(new BigDecimal("100")) > 0)) {
-            issues << "CAC_FEESELL_OLT tidak masuk akal: ${feeSell}%"
+        KeywordUtil.logInfo("📋 Daftar Stock Favorite (dengan Nama Group) untuk Client: ${clientCode}")
+        KeywordUtil.logInfo("=".multiply(60))
+
+        // Kelompokkan berdasarkan nama group (kasih label kalau null/tidak ada group)
+        Map<String, List<Map>> groupedByGroupName = favoriteList.groupBy { 
+            it.groupName ?: "Uncategorized/No Group (GroupID: ${it.groupId ?: 'FAVORITE'})" 
         }
 
-        if (issues.isEmpty()) {
-            KeywordUtil.logInfo("✅ Data Akun '${alias}' DITEMUKAN & VALID (Client: ${clientCode})")
-            KeywordUtil.logInfo(
-                    "[Account] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
-                    "FeeBuy=${feeBuy}%, FeeSell=${feeSell}%, " +
-                    "RDN=${bankRDI}, SRE=${invAccNo}, " +
-                    "CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
-                    "CurrentOutstanding=${currentOutstanding}"
-            )
-            return true
-        } else {
-            KeywordUtil.markFailed("❌ Data Akun '${accountAlias}' DITEMUKAN tetapi TIDAK LENGKAP/VALID")
-            issues.each { issue ->
-                KeywordUtil.logError("	⚠️ ${issue}")
+        groupedByGroupName.each { groupName, stocks ->
+            KeywordUtil.logInfo("🔖 Group: ${groupName} (${stocks.size()} saham)")
+            stocks.eachWithIndex { item, idx ->
+                KeywordUtil.logInfo("    ${idx + 1}. ${item.stock}  |  Entry: ${item.entryDate}")
             }
-            KeywordUtil.logError(
-                    "[Data Aktual] Name=${name}, Alias=${alias}, ClientCode=${clientCode}, " +
-                    "FeeBuy=${feeBuy}, FeeSell=${feeSell}, " +
-                    "RDN=${bankRDI}, SRE=${invAccNo}, " +
-                    "CashOnHand=${cashOnHand}, BegOutstanding=${begOutstanding}, " +
-                    "CurrentOutstanding=${currentOutstanding}"
-            )
-            return false
         }
+
+        KeywordUtil.logInfo("=".multiply(60))
+        KeywordUtil.logInfo("📊 TOTAL KESELURUHAN Stock Favorite: ${total} saham")
+
+        return total
+
     } catch (Exception e) {
-        KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada checkAccountDataExists. Pesan Error: " + e.getMessage())
-        return false
+        KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada listAllStockFavoriteWithGroupName. Pesan Error: " + e.getMessage())
+        return 0
     } finally {
         if (rs != null) rs.close()
         if (conn != null) conn.close()
     }
 }
+
+@Keyword
+static boolean verifyStockFavoriteGroupNameExists(String clientCode, String expectedGroupName) {
+	Connection conn = null
+	ResultSet rs = null
+
+	String sql = """
+        SELECT ID, NAME, USR, ENTRYDATE
+        FROM DBFEED.TB_FO_STOCKFAVORITEGROUP
+        WHERE USR = ?
+          AND UPPER(NAME) = UPPER(?)
+    """
+
+	try {
+		Class.forName(DB_DRIVER)
+		conn = DriverManager.getConnection(DB_URL_feed, DB_USER_feed, DB_PASS_feed)
+
+		def pstmt = conn.prepareStatement(sql.trim())
+		pstmt.setString(1, clientCode)
+		pstmt.setString(2, expectedGroupName)
+		rs = pstmt.executeQuery()
+
+		if (rs.next()) {
+			String actualId = rs.getString("ID")
+			String actualName = rs.getString("NAME")
+			String actualEntryDate = rs.getString("ENTRYDATE")
+
+			KeywordUtil.logInfo("✅ Group '${actualName}' DITEMUKAN untuk Client: ${clientCode}")
+			KeywordUtil.logInfo("[Group Detail] ID=${actualId}, Name=${actualName}, EntryDate=${actualEntryDate}")
+			return true
+		} else {
+			KeywordUtil.markFailed(
+					"❌ Group dengan nama '${expectedGroupName}' TIDAK DITEMUKAN untuk Client: ${clientCode}"
+			)
+			return false
+		}
+	} catch (Exception e) {
+		KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada verifyStockFavoriteGroupNameExists. Pesan Error: " + e.getMessage())
+		return false
+	} finally {
+		if (rs != null) rs.close()
+		if (conn != null) conn.close()
+	}
+}
+
+@Keyword
+static boolean verifyStockFavoriteGroupName(String clientCode, String groupId, String expectedGroupName) {
+	Connection conn = null
+	ResultSet rs = null
+
+	String sql = """
+        SELECT ID, NAME, USR, ENTRYDATE
+        FROM DBFEED.TB_FO_STOCKFAVORITEGROUP
+        WHERE USR = ?
+          AND ID = ?
+    """
+
+	try {
+		Class.forName(DB_DRIVER)
+		conn = DriverManager.getConnection(DB_URL_feed, DB_USER_feed, DB_PASS_feed)
+
+		def pstmt = conn.prepareStatement(sql.trim())
+		pstmt.setString(1, clientCode)
+		pstmt.setString(2, groupId)
+		rs = pstmt.executeQuery()
+
+		if (rs.next()) {
+			String actualId = rs.getString("ID")
+			String actualName = rs.getString("NAME")
+			String actualUsr = rs.getString("USR")
+			String actualEntryDate = rs.getString("ENTRYDATE")
+
+			boolean nameMatch = actualName?.trim()?.equalsIgnoreCase(expectedGroupName?.trim())
+
+			if (nameMatch) {
+				KeywordUtil.logInfo("✅ Nama Group SESUAI. GroupID: ${actualId}, Name: ${actualName}")
+				return true
+			} else {
+				KeywordUtil.markFailed(
+						"❌ Nama Group TIDAK SESUAI. GroupID: ${actualId}, " +
+						"Expected: ${expectedGroupName}, Actual: ${actualName}"
+				)
+				return false
+			}
+		} else {
+			KeywordUtil.markFailed(
+					"❌ GroupID: ${groupId} TIDAK DITEMUKAN di TB_FO_STOCKFAVORITEGROUP untuk Client: ${clientCode}"
+			)
+			return false
+		}
+	} catch (Exception e) {
+		KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada verifyStockFavoriteGroupName. Pesan Error: " + e.getMessage())
+		return false
+	} finally {
+		if (rs != null) rs.close()
+		if (conn != null) conn.close()
+	}
+}
+
+@Keyword
+static boolean verifyStockFavoriteGroupDeleted(String clientCode, String groupName) {
+	Connection conn = null
+	ResultSet rs = null
+
+	String sql = """
+        SELECT ID, NAME
+        FROM DBFEED.TB_FO_STOCKFAVORITEGROUP
+        WHERE USR = ?
+          AND UPPER(NAME) = UPPER(?)
+    """
+
+	try {
+		Class.forName(DB_DRIVER)
+		conn = DriverManager.getConnection(DB_URL_feed, DB_USER_feed, DB_PASS_feed)
+
+		def pstmt = conn.prepareStatement(sql.trim())
+		pstmt.setString(1, clientCode)
+		pstmt.setString(2, groupName)
+		rs = pstmt.executeQuery()
+
+		if (!rs.next()) {
+			KeywordUtil.logInfo("✅ Group '${groupName}' SUDAH TERHAPUS (tidak ditemukan) untuk Client: ${clientCode}")
+			return true
+		} else {
+			String actualId = rs.getString("ID")
+			KeywordUtil.markFailed(
+					"❌ Group '${groupName}' MASIH ADA (belum terhapus). ID: ${actualId}, Client: ${clientCode}"
+			)
+			return false
+		}
+	} catch (Exception e) {
+		KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada verifyStockFavoriteGroupDeleted. Pesan Error: " + e.getMessage())
+		return false
+	} finally {
+		if (rs != null) rs.close()
+		if (conn != null) conn.close()
+	}
+}
+	
+	@Keyword
+static BigDecimal calculateTotalMarketValue(String clientCode) {
+    Connection conn = null
+    ResultSet rs = null
+
+    String sql = """
+        SELECT 
+            NVL(SUM(CASE WHEN STATUS = 'CP' THEN NOMINAL ELSE 0 END), 0) -
+            NVL(SUM(CASE WHEN STATUS = 'CF' THEN NOMINAL ELSE 0 END), 0) AS TOTAL_MARKET_VALUE
+        FROM BNISFO.TB_FO_SBNORDER
+        WHERE CLS_INITIALCODE = ?
+    """
+
+    try {
+        Class.forName(DB_DRIVER)
+        conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+
+        def pstmt = conn.prepareStatement(sql.trim())
+        pstmt.setString(1, clientCode)
+        rs = pstmt.executeQuery()
+
+        if (rs.next()) {
+            BigDecimal total = rs.getBigDecimal("TOTAL_MARKET_VALUE")
+            KeywordUtil.logInfo("💰 Total Market Value SBN (CP - CF) untuk Client ${clientCode}: ${total}")
+            return total
+        }
+        return BigDecimal.ZERO
+    } catch (Exception e) {
+        KeywordUtil.markFailed("❌ Error menghitung Total Market Value: " + e.getMessage())
+        return BigDecimal.ZERO
+    } finally {
+        if (rs != null) rs.close()
+        if (conn != null) conn.close()
+    }
+}
+
+@Keyword
+static boolean verifyTotalMarketValue(String clientCode, BigDecimal expectedTotal) {
+    BigDecimal actualTotal = calculateTotalMarketValue(clientCode)
+    boolean isMatch = actualTotal.compareTo(expectedTotal) == 0
+
+    if (isMatch) {
+        KeywordUtil.logInfo("✅ Total Market Value SESUAI. Expected: ${expectedTotal}, Actual (DB): ${actualTotal}")
+    } else {
+        BigDecimal selisih = actualTotal.subtract(expectedTotal)
+        KeywordUtil.markFailed("❌ Total Market Value TIDAK SESUAI. Expected (UI): ${expectedTotal}, Actual (DB): ${actualTotal}, Selisih: ${selisih}")
+    }
+
+    return isMatch
+}
+
+	/**
+	 * [FUNGSI UNTUK SBN ORDER]
+	 * Memverifikasi data order SBN (Surat Berharga Negara) terbaru di TB_FO_SBNORDER.
+	 */
+	@Keyword
+	static boolean verifyLatestSBNOrder(
+			String clientCode,
+			String expectedSbnId,
+			BigDecimal expectedNominal,
+			String expectedKodeBiling,
+			String expectedPaymentChannel,
+			List<String> expectedStatuses
+	) {
+		Connection conn = null
+		ResultSet rs = null
+
+		String sql = """
+        SELECT * FROM (
+            SELECT * FROM BNISFO.TB_FO_SBNORDER
+            WHERE CLS_INITIALCODE = ?
+            ORDER BY ENTRYDATE DESC
+        ) WHERE ROWNUM <= 1
+    """
+
+		try {
+			Class.forName(DB_DRIVER)
+			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+
+			def pstmt = conn.prepareStatement(sql.trim())
+			pstmt.setString(1, clientCode)
+			rs = pstmt.executeQuery()
+
+			if (rs.next()) {
+
+				String actualTrxId          = rs.getString("TRXID")
+				String actualTrxDate        = rs.getString("TRXDATE")
+				String actualSbnId          = rs.getString("SBNID")
+				BigDecimal actualNominal    = rs.getBigDecimal("NOMINAL")
+				String actualSettleDate     = rs.getString("SETTLEDATE")
+				String actualEntryDate      = rs.getString("ENTRYDATE")
+				String actualVerifiedDate   = rs.getString("VERIFIEDDATE")
+				String actualCompletedDate  = rs.getString("COMPLETEDDATE")
+				String actualKodeBiling     = rs.getString("KODEBILING")
+				String actualSid            = rs.getString("SID")
+				String actualRekSb          = rs.getString("REKSB")
+				String actualRekDana        = rs.getString("REKDANA")
+				String actualKodePemesanan  = rs.getString("KODEPEMESANAN")
+				BigDecimal actualBallNominal = rs.getBigDecimal("BALNOMINAL")
+				String actualNtpn           = rs.getString("NTPN")
+				String actualNtb            = rs.getString("NTB")
+				String actualPaymentChannel = rs.getString("PAYMENTCHANNEL")
+				String rawStatus            = rs.getString("STATUS")
+
+				String actualStatus = getSBNOrderStatusDescription(rawStatus)
+
+				// --- Pencocokan Data ---
+				boolean sbnIdMatch = expectedSbnId == null ||
+						actualSbnId?.equalsIgnoreCase(expectedSbnId)
+
+				boolean nominalMatch = expectedNominal == null ||
+						(actualNominal != null && actualNominal.compareTo(expectedNominal) == 0)
+
+				boolean kodeBilingMatch = expectedKodeBiling == null ||
+						actualKodeBiling?.equalsIgnoreCase(expectedKodeBiling)
+
+				boolean paymentChannelMatch = expectedPaymentChannel == null ||
+						actualPaymentChannel?.equalsIgnoreCase(expectedPaymentChannel)
+
+				boolean statusMatch = expectedStatuses == null || expectedStatuses.isEmpty() ||
+						expectedStatuses.contains(actualStatus)
+
+				if (sbnIdMatch && nominalMatch && kodeBilingMatch && paymentChannelMatch && statusMatch) {
+					KeywordUtil.logInfo("✅ Verifikasi DB SBN Order BERHASIL untuk Client: ${clientCode}")
+					KeywordUtil.logInfo(
+							"[SBN Order] TrxID=${actualTrxId}, SBN ID=${actualSbnId}, Nominal=${actualNominal}, " +
+							"KodeBiling=${actualKodeBiling}, PaymentChannel=${actualPaymentChannel}, " +
+							"Status=${actualStatus} (Raw: ${rawStatus})"
+							)
+					KeywordUtil.logInfo(
+							"	[Detail Tanggal]: TrxDate=${actualTrxDate}, EntryDate=${actualEntryDate}, " +
+							"SettleDate=${actualSettleDate}, VerifiedDate=${actualVerifiedDate}, CompletedDate=${actualCompletedDate}"
+							)
+					KeywordUtil.logInfo(
+							"	[Info Tambahan]: SID=${actualSid}, RekSB=${actualRekSb}, RekDana=${actualRekDana}, " +
+							"KodePemesanan=${actualKodePemesanan}, BalNominal=${actualBallNominal}, " +
+							"NTPN=${actualNtpn}, NTB=${actualNtb}"
+							)
+					return true
+				} else {
+					KeywordUtil.markFailed("❌ Verifikasi DB SBN Order GAGAL. Data tidak cocok untuk Client: ${clientCode}")
+					KeywordUtil.logError("	TrxID Ditemukan: ${actualTrxId}, Status: ${actualStatus} (Raw: ${rawStatus})")
+					KeywordUtil.logError("	Ekspektasi SBN ID: ${expectedSbnId}, Aktual: ${actualSbnId}, Match: ${sbnIdMatch}")
+					KeywordUtil.logError("	Ekspektasi Nominal: ${expectedNominal}, Aktual: ${actualNominal}, Match: ${nominalMatch}")
+					KeywordUtil.logError("	Ekspektasi KodeBiling: ${expectedKodeBiling}, Aktual: ${actualKodeBiling}, Match: ${kodeBilingMatch}")
+					KeywordUtil.logError("	Ekspektasi PaymentChannel: ${expectedPaymentChannel}, Aktual: ${actualPaymentChannel}, Match: ${paymentChannelMatch}")
+					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus}), Match: ${statusMatch}")
+					KeywordUtil.logError(
+							"	[Info Tambahan]: SID=${actualSid}, RekSB=${actualRekSb}, RekDana=${actualRekDana}, " +
+							"KodePemesanan=${actualKodePemesanan}, NTPN=${actualNtpn}, NTB=${actualNtb}"
+							)
+					return false
+				}
+			} else {
+				KeywordUtil.markFailed("❌ Tidak ada order SBN yang ditemukan di TB_FO_SBNORDER untuk CLS_INITIALCODE: ${clientCode}")
+				return false
+			}
+		} catch (Exception e) {
+			KeywordUtil.markFailed("❌ Error Koneksi/Query DB pada verifyLatestSBNOrder. Pesan Error: " + e.getMessage())
+			return false
+		} finally {
+			if (rs != null) rs.close()
+			if (conn != null) conn.close()
+		}
+	}
+
+	//	@Keyword
+	//	static boolean verifyLatestSBNOrder(
+	//			 String clientCode,
+	//        BigDecimal expectedNominal
+	//	) {
+	//		return verifyLatestSBNOrder(
+	//				clientCode,
+	//				expectedSbnId,
+	//				expectedNominal,
+	//				null,
+	//				null,
+	//				null
+	//		)
+	//	}
+
+
+	@Keyword
+	static boolean verifyLatestSBNOrderSimple(
+			String clientCode,
+			BigDecimal expectedNominal
+	) {
+		return verifyLatestSBNOrder(
+				clientCode,
+				expectedNominal,
+				(String) null
+				)
+	}
+
+	@Keyword
+	static boolean verifyLatestSBNOrder(
+			String clientCode,
+			BigDecimal expectedNominal,
+			String expectedSbnId
+	) {
+		return verifyLatestSBNOrder(
+				clientCode,
+				expectedSbnId,
+				expectedNominal,
+				null,
+				null,
+				null
+				)
+	}
 
 	@Keyword
 	static boolean waitUntilPortfolioDelta(
@@ -1273,97 +1713,95 @@ Last Update : ${lastUpdated}
 	 * Memerlukan verifikasi nama kolom di DB.
 	 */
 	@com.kms.katalon.core.annotation.Keyword
-	static boolean verifyLatestBondTransaction(String clientCode, String expectedBondCode, BigDecimal expectedNominal, BigDecimal expectedPrice, List<String> expectedStatuses,String expectedEstampDuty,BigDecimal expectedTotalPayment) {
-		Connection conn = null
-		ResultSet rsBond = null
+	static boolean verifyLatestBondTransaction(String clientCode, String expectedBondCode, BigDecimal expectedNominal, BigDecimal expectedPrice, List<String> expectedStatuses, String expectedEstampDuty, BigDecimal expectedTotalPayment) {
+    Connection conn = null
+    ResultSet rsBond = null
 
-		// **KOREKSI 2: Menghilangkan Karakter Ilegal di akhir baris TB_FO_BONDTRANSACTION**
-		String sqlBond = """
-			SELECT * FROM (
-				SELECT * FROM BNISFO.TB_FO_BONDTRANSACTION
-				WHERE USR_ID = ?
-				ORDER BY TRXDATE DESC
-			) WHERE ROWNUM <= 1
-		"""
+    // **KOREKSI 2: Menghilangkan Karakter Ilegal di akhir baris TB_FO_BONDTRANSACTION**
+    String sqlBond = """
+    SELECT * FROM (
+        SELECT * FROM BNISFO.TB_FO_BONDTRANSACTION
+        WHERE USR_ID = ?
+        ORDER BY TRXID DESC
+    ) WHERE ROWNUM <= 1
+"""
 
-		try {
-			Class.forName(DB_DRIVER)
+    try {
+        Class.forName(DB_DRIVER)
 
-			conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
-			def pstmtBond = conn.prepareStatement(sqlBond.trim())
-			pstmtBond.setString(1, clientCode)
+        conn = DriverManager.getConnection(DB_URL_SFO, DB_USER_SFO, DB_PASS_SFO)
+        def pstmtBond = conn.prepareStatement(sqlBond.trim())
+        pstmtBond.setString(1, clientCode)
 
-			rsBond = pstmtBond.executeQuery()
+        rsBond = pstmtBond.executeQuery()
 
-			if (rsBond.next()) {
+        if (rsBond.next()) {
 
-				String actualTransactionId = rsBond.getString("TRXID")
-				String actualBondCode = rsBond.getString("BONDID")
-				BigDecimal actualNominal = rsBond.getBigDecimal("NOMINAL")
-				BigDecimal actualPrice = rsBond.getBigDecimal("PRICE")
-				String actualTrxDate = rsBond.getString("TRXDATE")
-				String rawStatus = rsBond.getString("STATUS")
-				String actualRejectReason = rsBond.getString("REJECT_DESC")
-				String actualEstampDuty = rsBond.getString("ESTAMP_DUTY")
-				BigDecimal actualTotalPayment = rsBond.getBigDecimal("TOTAL_PAYMENT")
+            String actualTransactionId = rsBond.getString("TRXID")
+            String actualBondCode = rsBond.getString("BONDID")
+            BigDecimal actualNominal = rsBond.getBigDecimal("NOMINAL")
+            BigDecimal actualPrice = rsBond.getBigDecimal("PRICE")
+            String actualTrxDate = rsBond.getString("TRXDATE")
+            String rawStatus = rsBond.getString("STATUS")
+            String actualRejectReason = rsBond.getString("REJECT_DESC")
+            String actualEstampDuty = rsBond.getString("ESTAMP_DUTY")
+            BigDecimal actualTotalPayment = rsBond.getBigDecimal("TOTAL_PAYMENT")
 
+            // Konversi Status Bond
+            String actualStatus = getBondTransactionStatusDescription(rawStatus)
 
-				// Konversi Status Bond
-				String actualStatus = getBondTransactionStatusDescription(rawStatus)
+            // --- Logika Pencocokan Data Bond Transaksi ---
+            boolean bondCodeMatch = actualBondCode.equalsIgnoreCase(expectedBondCode)
+            boolean nominalMatch = actualNominal.compareTo(expectedNominal) == 0
+            boolean priceMatch   = actualPrice.compareTo(expectedPrice) == 0
+            boolean statusMatch  = expectedStatuses.contains(actualStatus)
+            boolean estampDutyMatch = true
+            boolean totalPaymentMatch = true
 
-				// --- Logika Pencocokan Data Bond Transaksi ---
-				boolean bondCodeMatch = actualBondCode.equalsIgnoreCase(expectedBondCode)
-				boolean nominalMatch = actualNominal.compareTo(expectedNominal) == 0
-				boolean priceMatch   = actualPrice.compareTo(expectedPrice) == 0
-				boolean statusMatch  = expectedStatuses.contains(actualStatus)
-				boolean estampDutyMatch = true
-				boolean totalPaymentMatch = true
+            if (expectedEstampDuty != null) {
+                estampDutyMatch = actualEstampDuty?.equalsIgnoreCase(expectedEstampDuty)
+            }
 
-				if (expectedEstampDuty != null) {
-					estampDutyMatch =
-							actualEstampDuty?.equalsIgnoreCase(expectedEstampDuty)
-				}
+            if (expectedTotalPayment != null) {
+                totalPaymentMatch = actualTotalPayment.compareTo(expectedTotalPayment) == 0
+            }
 
-				if (expectedTotalPayment != null) {
-					totalPaymentMatch =
-							actualTotalPayment.compareTo(expectedTotalPayment) == 0
-				}
-				if (bondCodeMatch && nominalMatch && priceMatch &&
-						statusMatch && estampDutyMatch && totalPaymentMatch) {
+            if (bondCodeMatch && nominalMatch && priceMatch &&
+                    statusMatch && estampDutyMatch && totalPaymentMatch) {
 
-					KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi BERHASIL (SEMUA FIELD MATCH)")
-					KeywordUtil.logInfo(
-							"[Bond] ID=${actualTransactionId}, Code=${actualBondCode}, " +
-							"Nominal=${actualNominal}, Price=${actualPrice}, " +
-							"Status=${actualStatus}, EstampDuty=${actualEstampDuty}, " +
-							"TotalPayment=${actualTotalPayment}"
-							)
-					return true
-				} else {
-					KeywordUtil.markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Data tidak cocok.")
-					KeywordUtil.logError("	Transaksi ID Ditemukan: ${actualTransactionId}")
-					KeywordUtil.logError("	Ekspektasi Bond Code: ${expectedBondCode}, Aktual: ${actualBondCode}")
-					KeywordUtil.logError("	Ekspektasi Nominal: ${expectedNominal}, Aktual: ${actualNominal}")
-					KeywordUtil.logError("	Ekspektasi Price: ${expectedPrice}, Aktual: ${actualPrice}")
-					KeywordUtil.logError("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus})")
-					KeywordUtil.logError("	Ekspektasi EstampDuty: ${expectedEstampDuty}, Aktual: ${actualEstampDuty}")
-					KeywordUtil.logError("	Ekspektasi TotalPayment: ${expectedTotalPayment}, Aktual: ${actualTotalPayment}")
-					KeywordUtil.logError("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
-					return false
-				}
-			} else {
-				KeywordUtil.markFailed("❌ Tidak ada transaksi Bond yang ditemukan di TB_FO_BONDTRANSACTION untuk USR_ID: ${clientCode}")
-				return false
-			}
-		} catch (Exception e) {
-
-			KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage())
-			return false
-		} finally {
-			if (rsBond != null) rsBond.close()
-			if (conn != null) conn.close()
-		}
-	}
+                KeywordUtil.logInfo("✅ Verifikasi DB Bond Transaksi BERHASIL (SEMUA FIELD MATCH)")
+                KeywordUtil.logInfo(
+                        "[Bond] ID=${actualTransactionId}, Code=${actualBondCode}, " +
+                        "Nominal=${actualNominal}, Price=${actualPrice}, " +
+                        "Status=${actualStatus}, EstampDuty=${actualEstampDuty}, " +
+                        "TotalPayment=${actualTotalPayment}"
+                )
+                return true
+            } else {
+                KeywordUtil.logInfo("❌ Verifikasi DB Bond Transaksi GAGAL. Data tidak cocok.")
+                KeywordUtil.logInfo("	Transaksi ID Ditemukan: ${actualTransactionId}")
+                KeywordUtil.logInfo("	Ekspektasi Bond Code: ${expectedBondCode}, Aktual: ${actualBondCode}, Match: ${bondCodeMatch}")
+                KeywordUtil.logInfo("	Ekspektasi Nominal: ${expectedNominal}, Aktual: ${actualNominal}, Match: ${nominalMatch}")
+                KeywordUtil.logInfo("	Ekspektasi Price: ${expectedPrice}, Aktual: ${actualPrice}, Match: ${priceMatch}")
+                KeywordUtil.logInfo("	Ekspektasi Status (List): ${expectedStatuses}, Aktual: ${actualStatus} (Raw: ${rawStatus}), Match: ${statusMatch}")
+                KeywordUtil.logInfo("	Ekspektasi EstampDuty: ${expectedEstampDuty}, Aktual: ${actualEstampDuty}, Match: ${estampDutyMatch}")
+                KeywordUtil.logInfo("	Ekspektasi TotalPayment: ${expectedTotalPayment}, Aktual: ${actualTotalPayment}, Match: ${totalPaymentMatch}")
+                KeywordUtil.logInfo("	[Info Tambahan]: TRX Date: ${actualTrxDate}, Reject Reason: ${actualRejectReason}")
+                markFailed("❌ Verifikasi DB Bond Transaksi GAGAL. Data tidak cocok.")
+                return false
+            }
+        } else {
+            KeywordUtil.markFailed("❌ Tidak ada transaksi Bond yang ditemukan di TB_FO_BONDTRANSACTION untuk USR_ID: ${clientCode}")
+            return false
+        }
+    } catch (Exception e) {
+        KeywordUtil.markFailed("❌ Error Koneksi/Query DB. Pesan Error: " + e.getMessage())
+        return false
+    } finally {
+        if (rsBond != null) rsBond.close()
+        if (conn != null) conn.close()
+    }
+}
 
 	@com.kms.katalon.core.annotation.Keyword
 	static boolean verifyLatestMutualFundOrder(String clientCode, String expectedFundCode, BigDecimal expectedAmount, String expectedTrxType, List<String> expectedStatuses) {

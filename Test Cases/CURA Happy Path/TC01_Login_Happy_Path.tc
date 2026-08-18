@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Logs in to the CURA demo site with the valid demo credentials and verifies the appointment form is displayed.</description>
+   <name>TC01_Login_Happy_Path</name>
+   <tag>GenAI,happy-path,login,cura</tag>
+   <comment></comment>
+   <origin>STUDIOASSIST</origin>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>080f067b-cdba-4c83-89be-6d244c3baca8</testCaseGuid>
+</TestCaseEntity>

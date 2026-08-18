@@ -30,34 +30,35 @@ import groovy.json.JsonSlurper as JsonSlurper
 boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
 
 if (isMarketOpen) {
-	KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
 } else {
-	boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
 
-	if (isMarketBreak) {
-		KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-	} else {
-		KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-	}
+    if (isMarketBreak) {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+    } else {
+        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+    }
 }
+
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
 String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 
 try {
-	Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
+    Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
 
-	KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+    KeywordUtil.logInfo("✅ Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
 }
 catch (Exception e) {
-	KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(),
-		FailureHandling.STOP_ON_FAILURE)
-}
+    KeywordUtil.markFailed('❌ Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
+        FailureHandling.STOP_ON_FAILURE)
+} 
 
 Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PIN', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PASSWORD', 0)
 
 Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
 
@@ -73,7 +74,7 @@ TcpClient client = new TcpClient()
 
 //client.connect('REDACTED_INTERNAL_IP', 62229 // FEED_SERVER_1
 client.connect('Trade.Bions.id', 62229 // FEED_SERVER_1
-	)
+    )
 
 //  client.connect('mock.bions.xyz', 62229 // FEED_SERVER_1
 // )
@@ -108,7 +109,6 @@ Mobile.tap(findTestObject('NavBar_Scalability/Watchlist'), 0)
 Mobile.swipe(500, 1500, 500, 500)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1_V2.PNG')
-
 
 Mobile.closeApplication()
 
