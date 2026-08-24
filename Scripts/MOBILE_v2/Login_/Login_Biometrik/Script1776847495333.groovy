@@ -40,7 +40,6 @@ boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'(
 //        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
 //    }
 //}
-
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
 //Mobile.startApplication('/Users/bionsrevamp/Downloads/app-development-profile 1 (1).apk', true)
@@ -56,11 +55,11 @@ catch (Exception e) {
         FailureHandling.STOP_ON_FAILURE)
 } 
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '1b029', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PASSWORD', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
@@ -103,14 +102,17 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_Biometric.PNG')
 
 Mobile.tap(findTestObject('Login_firebase/use_biometric'), 0)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login_V2.PNG')
 
 Mobile.delay(3, FailureHandling.STOP_ON_FAILURE)
 
 Mobile.swipe(500, 1500, 500, 500)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1_V2.PNG')
 
 Mobile.swipe(500, 1500, 500, 500)
+
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login2_V2.PNG')
 
 Mobile.closeApplication()
