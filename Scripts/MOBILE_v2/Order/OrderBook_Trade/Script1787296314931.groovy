@@ -34,19 +34,19 @@ String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 
 String screenshotBasePath = '/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login'
 
-String userId = GlobalVariable.G_userId
+String userId = GlobalVariable.G_deviceIduserId
 
-String password = GlobalVariable.G_password
+String password = GlobalVariable.G_deviceIdpassword
 
-String pin = GlobalVariable.G_pin
+String pin = GlobalVariable.G_deviceIdpin
 
-String host = GlobalVariable.G_tradinghost
+String host = GlobalVariable.G_deviceIdtradinghost
 
-int feedPort = GlobalVariable.G_feedport.toInteger()
+int feedPort = GlobalVariable.G_deviceIdfeedport.toInteger()
 
-int tradingPort = GlobalVariable.G_tradingport.toInteger()
+int tradingPort = GlobalVariable.G_deviceIdtradingport.toInteger()
 
-String clientIp = GlobalVariable.G_clientip
+String clientIp = GlobalVariable.G_deviceIdclientip
 
 String stockSymbol = 'BBNIRG'
 
@@ -71,13 +71,10 @@ def verify = { boolean condition, String description ->
 // ============================================================
 try {
     Mobile.startExistingApplication(applicationID, FailureHandling.STOP_ON_FAILURE)
-
     KeywordUtil.logInfo("Aplikasi dengan ID '$applicationID' berhasil diluncurkan.")
+} catch (Exception e) {
+    KeywordUtil.markFailed('Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage())
 }
-catch (Exception e) {
-    KeywordUtil.markFailed('Gagal meluncurkan aplikasi. Pastikan aplikasi sudah terinstal di perangkat. Error: ' + e.getMessage(), 
-        FailureHandling.STOP_ON_FAILURE)
-} 
 
 // ============================================================
 // STEP 2: LOGIN VIA UI MOBILE
@@ -148,20 +145,20 @@ if (orderbook != null) {
 
     def offers = orderbook.offers
 
-    KeywordUtil.logInfo("=== ORDERBOOK $orderbook.stockCode$orderbook.boardCode | Last: Rp$BionsSocketClient.formatPrice(orderbook.last) ===")
+KeywordUtil.logInfo("=== ORDERBOOK ${orderbook.stockCode}${orderbook.boardCode} | Last: Rp${BionsSocketClient.formatPrice(orderbook.last)} ===")
 
-    KeywordUtil.logInfo(String.format('%-8s %-10s %-8s | %-8s %-10s %-8s', 'Queue', 'Lot', 'Bid', 'Offer', 'Lot', 'Queue'))
+KeywordUtil.logInfo(String.format('%-8s %-10s %-8s | %-8s %-10s %-8s', 'Queue', 'Lot', 'Bid', 'Offer', 'Lot', 'Queue'))
 
-    int maxRows = Math.max(bids.size(), offers.size())
+int maxRows = Math.max(bids.size(), offers.size())
 
-    for (int i = 0; i < maxRows; i++) {
-        Map bid = i < bids.size() ? bids[i] : [('price') : '-', ('lot') : '-', ('orderCount') : '-']
+for (int i = 0; i < maxRows; i++) {
+    Map bid = i < bids.size() ? bids[i] : [price: '-', lot: '-', orderCount: '-']
+    Map offer = i < offers.size() ? offers[i] : [price: '-', lot: '-', orderCount: '-']
 
-        Map offer = i < offers.size() ? offers[i] : [('price') : '-', ('lot') : '-', ('orderCount') : '-']
-
-        KeywordUtil.logInfo(String.format('%-8s %-10s %-8s | %-8s %-10s %-8s', bid.orderCount, bid.lot, BionsSocketClient.formatPrice(
-                    bid.price), BionsSocketClient.formatPrice(offer.price), offer.lot, offer.orderCount))
-    }
+    KeywordUtil.logInfo(String.format('%-8s %-10s %-8s | %-8s %-10s %-8s',
+            bid.orderCount, bid.lot, BionsSocketClient.formatPrice(bid.price),
+            BionsSocketClient.formatPrice(offer.price), offer.lot, offer.orderCount))
+}
     
     long totalQueueBid = ((bids.sum({ 
                 it.orderCount instanceof Number ? it.orderCount.longValue() : 0

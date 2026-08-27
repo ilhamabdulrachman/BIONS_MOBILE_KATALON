@@ -27,19 +27,19 @@ import com.utilities.TradingHours as TradingHours
 import com.utilities.ShimmerWait as ShimmerWait
 import groovy.json.JsonSlurper as JsonSlurper
 
-boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
-
-if (isMarketOpen) {
-    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
-} else {
-    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
-
-    if (isMarketBreak) {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
-    } else {
-        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
-    }
-}
+//boolean isMarketOpen = CustomKeywords.'com.utilities.TradingHours.isMarketOpen'()
+//
+//if (isMarketOpen) {
+//    KeywordUtil.logInfo('Bursa sedang buka. Melanjutkan pengujian...')
+//} else {
+//    boolean isMarketBreak = CustomKeywords.'com.utilities.TradingHours.isMarketBreak'()
+//
+//    if (isMarketBreak) {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang istirahat.', FailureHandling.STOP_ON_FAILURE)
+//    } else {
+//        KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.', FailureHandling.STOP_ON_FAILURE)
+//    }
+//}
 
 //def elemenDashboard = findTestObject('TEST_LOGIN/stock')
 //NetworkChecker.verifyInternetConnection()
@@ -56,11 +56,11 @@ catch (Exception e) {
         FailureHandling.STOP_ON_FAILURE)
 } 
 
-Mobile.setText(findTestObject('Login_firebase/User_id'), 'REDACTED_USERID', 0)
+Mobile.setText(findTestObject('Login_firebase/User_id'), '23AA50456', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pw'), 'REDACTED_PASSWORD', 0)
+Mobile.setText(findTestObject('Login_firebase/Pw'), 'q', 0)
 
-Mobile.setText(findTestObject('Login_firebase/Pin'), 'REDACTED_PIN', 0)
+Mobile.setText(findTestObject('Login_firebase/Pin'), 'q12345', 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 

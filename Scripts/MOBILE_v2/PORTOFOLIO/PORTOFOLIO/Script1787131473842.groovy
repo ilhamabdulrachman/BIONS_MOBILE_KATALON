@@ -33,13 +33,13 @@ import com.utilities.BionsSocketClient
 String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 String screenshotBasePath = '/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login'
 
-String userId = GlobalVariable.G_userId
-String password = GlobalVariable.G_password
-String pin = GlobalVariable.G_pin
-String host = GlobalVariable.G_tradinghost
-int feedPort = GlobalVariable.G_feedport as int
-int tradingPort = GlobalVariable.G_tradingport as int
-String clientIp = GlobalVariable.G_clientip
+String userId = GlobalVariable.G_deviceIduserId
+String password = GlobalVariable.G_deviceIdpassword
+String pin = GlobalVariable.G_deviceIdpin
+String host = GlobalVariable.G_deviceIdtradinghost
+int feedPort = GlobalVariable.G_deviceIdfeedport as int
+int tradingPort = GlobalVariable.G_deviceIdtradingport as int
+String clientIp = GlobalVariable.G_deviceIdclientip
 
 List<String> symbols = ['RAJARG', 'BRMSRG', 'SUPARG', 'DADARG','GOTO']
 int liveMonitorSeconds = 10

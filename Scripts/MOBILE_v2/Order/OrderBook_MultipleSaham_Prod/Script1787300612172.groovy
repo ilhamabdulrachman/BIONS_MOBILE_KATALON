@@ -34,19 +34,19 @@ String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 
 String screenshotBasePath = '/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login'
 
-String userId = GlobalVariable.G_userId
+String userId = GlobalVariable.G_deviceIduserId
 
-String password = GlobalVariable.G_password
+String password = GlobalVariable.G_deviceIdpassword
 
-String pin = GlobalVariable.G_pin
+String pin = GlobalVariable.G_deviceIdpin
 
-String host = GlobalVariable.G_tradinghost
+String host = GlobalVariable.G_deviceIdtradinghost
 
-int feedPort = GlobalVariable.G_feedport.toInteger()
+int feedPort = GlobalVariable.G_deviceIdfeedport.toInteger()
 
-int tradingPort = GlobalVariable.G_tradingport.toInteger()
+int tradingPort = GlobalVariable.G_deviceIdtradingport.toInteger()
 
-String clientIp = GlobalVariable.G_clientip
+String clientIp = GlobalVariable.G_deviceIdclientip
 
 List<String> stockSymbols = ['BBNIRG', 'BBCARG',]
 
@@ -92,7 +92,7 @@ Mobile.takeScreenshot("$screenshotBasePath/Login0.PNG")
 
 Instant start = Instant.now()
 
-Mobile.tap(findTestObject('Login_V2/login'), 0)
+Mobile.tap(findTestObject('Login_V2/button_login'), 0)
 
 Mobile.takeScreenshot("$screenshotBasePath/Login1.PNG")
 
@@ -110,9 +110,9 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 
 Mobile.takeScreenshot("$screenshotBasePath/Login_Biometric.PNG")
 
-Mobile.tap(findTestObject('Login_firebase/Not_now'), 0)
+Mobile.tap(findTestObject('Login_V2/button_notnow'), 0)
 
-Mobile.tap(findTestObject('NavBar_Scalability/trade'), 0)
+Mobile.tap(findTestObject('NavBar_Scalability/trade_'), 0)
 
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Trade_V2.PNG')
 

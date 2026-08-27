@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>Login</name>
+   <name>LOGIN_Telkomsel</name>
    <tag></tag>
    <isRerun>false</isRerun>
-   <mailRecipient>ilham.rachman@bnisekuritas.co.id;</mailRecipient>
+   <mailRecipient></mailRecipient>
    <maxConcurrentInstances>1</maxConcurrentInstances>
-   <numberOfRerun>0</numberOfRerun>
+   <numberOfRerun>3</numberOfRerun>
    <orchestration>CLASSIC</orchestration>
-   <pageLoadTimeout>30</pageLoadTimeout>
+   <pageLoadTimeout>10</pageLoadTimeout>
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
-   <rerunImmediately>false</rerunImmediately>
-   <testSuiteGuid>e6a7bb98-9dc9-4440-9ecb-9437e7ba72c3</testSuiteGuid>
+   <rerunImmediately>true</rerunImmediately>
+   <testSuiteGuid>45e54f60-504d-4a1a-a199-a95c4e7e003f</testSuiteGuid>
    <testCaseLink>
-      <guid>306f11f3-32c6-449b-bf14-708f0b0da9fc</guid>
+      <guid>916015b3-aa45-465c-9566-408b7d09463f</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE_v2/Login_/Login</testCaseId>
+      <testCaseId>Test Cases/MOBILE_v2/Login_/Login_Prod</testCaseId>
       <usingDataBindingAtTestSuiteLevel>false</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>
