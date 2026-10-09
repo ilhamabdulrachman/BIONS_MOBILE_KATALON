@@ -14,10 +14,10 @@
    <rerunImmediately>true</rerunImmediately>
    <testSuiteGuid>7a9a1ece-ff3a-49da-ac9e-ae7c98c23d20</testSuiteGuid>
    <testCaseLink>
-      <guid>2a4afbac-b94e-4607-8b05-19cfc82c02c4</guid>
+      <guid>8949802b-237c-40bb-8a72-5186a9c6a06d</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE_v2/Order/OrderBook_Trade</testCaseId>
+      <testCaseId>Test Cases/MOBILE_v2/Order/Order_Booking/OrderBook_Trade</testCaseId>
       <usingDataBindingAtTestSuiteLevel>false</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

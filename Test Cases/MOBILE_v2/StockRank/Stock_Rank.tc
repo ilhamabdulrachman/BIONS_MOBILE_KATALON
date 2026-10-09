@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Make Sure Reatime, 
+Make sure top frequency.</description>
+   <name>Stock_Rank</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>ed0e8751-4fc1-45b0-9ad8-003b00d7bf43</testCaseGuid>
+</TestCaseEntity>

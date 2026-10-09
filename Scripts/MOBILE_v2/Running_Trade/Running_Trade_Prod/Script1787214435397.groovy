@@ -34,19 +34,19 @@ String applicationID = 'id.bions.bnis.android.new_bions_revamp'
 
 String screenshotBasePath = '/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login'
 
-String userId = GlobalVariable.G_deviceIduserId
+String userId = GlobalVariable.G_userIdDevdeviceIduserId
 
-String password = GlobalVariable.G_deviceIdpassword
+String password = GlobalVariable.G_userIdDevdeviceIdpassword
 
-String pin = GlobalVariable.G_deviceIdpin
+String pin = GlobalVariable.G_userIdDevdeviceIdpin
 
-String host = GlobalVariable.G_deviceIdtradinghost
+String host = GlobalVariable.G_userIdDevdeviceIdtradinghost
 
-int feedPort = GlobalVariable.G_deviceIdfeedport.toInteger()
+int feedPort = GlobalVariable.G_userIdDevdeviceIdfeedport.toInteger()
 
-int tradingPort = GlobalVariable.G_deviceIdtradingport.toInteger()
+int tradingPort = GlobalVariable.G_userIdDevdeviceIdtradingport.toInteger()
 
-String clientIp = GlobalVariable.G_deviceIdclientip
+String clientIp = GlobalVariable.G_userIdDevdeviceIdclientip
 
 // ============================================================
 // STEP 1: LAUNCH APPLICATION

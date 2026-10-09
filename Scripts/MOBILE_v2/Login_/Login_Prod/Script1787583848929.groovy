@@ -34,9 +34,9 @@ int liveMonitorSeconds = 10
 // STEP 1: CEK JAM BURSA
 // ============================================================
 
-//if (!(TradingHours.isMarketOpen())) {
-//    KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.')
-//}
+if (!(TradingHours.isMarketOpen())) {
+    KeywordUtil.markFailed('Tes gagal. Bursa sedang tutup.')
+}
 
 // ============================================================
 // STEP 2: LAUNCH APPLICATION
@@ -54,11 +54,11 @@ try {
 Mobile.setText(findTestObject('Login_firebase/User_id'), userId, 0)
 Mobile.setText(findTestObject('Login_firebase/Pw'), password, 0)
 Mobile.setText(findTestObject('Login_firebase/Pin'), pin, 0)
-Mobile.takeScreenshot("${screenshotBasePath}/Login0.PNG")
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login0.PNG')
 
 Instant loginStart = Instant.now()
 Mobile.tap(findTestObject('Login_V2/button_login'), 0)
-Mobile.takeScreenshot("${screenshotBasePath}/Login1.PNG")
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login1.PNG')
 
 // ===== VERIFIKASI NYATA: cek apakah button_notnow (biometric prompt) muncul =====
 
@@ -69,9 +69,8 @@ boolean loginSuccess = Mobile.verifyElementExist(
 )
 
 if (!loginSuccess) {
-    Mobile.takeScreenshot("${screenshotBasePath}/Login_FAILED.PNG")
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login2.PNG')
 
-    // Jalankan diagnosa jaringan untuk cari tahu penyebab kegagalan login
     Map diagnostic = NetworkDiagnostic.runDiagnostic(host, feedPort)
 
     KeywordUtil.markFailed('❌ Login GAGAL - biometric prompt (button_notnow) tidak muncul dalam 10 detik setelah tap Login. ' +
@@ -94,7 +93,7 @@ KeywordUtil.logInfo('Login successful at ' + now.format(fmt))
 // ============================================================
 // STEP 4: HANDLE BIOMETRIC PROMPT
 // ============================================================
-Mobile.takeScreenshot("${screenshotBasePath}/Login_Biometric.PNG")
+Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Login4.PNG')
 Mobile.tap(findTestObject('Login_V2/button_notnow'), 0)
 Mobile.takeScreenshot('/Users/bionsrevamp/Katalon Studio/Bions__/Reports/20250801_113059/Mobile/Login/Trade_V2.PNG')
 

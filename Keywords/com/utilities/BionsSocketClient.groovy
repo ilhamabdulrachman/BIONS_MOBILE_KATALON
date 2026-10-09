@@ -21,8 +21,6 @@ import javax.crypto.Cipher
 */
 class BionsSocketClient {
 
-	// Env.socketPublicKey. Do not replace this with API_PUBLIC_KEY or
-	// API_PUBLIC_KEY_REGIS; those keys are for REST endpoints.
 	static final String SOCKET_PUBLIC_KEY_BASE64 =
 			'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVd/gb2ORdLI7nTRHJR8C5EHs4RkRBcQuQdHkZ6eq0xnV2f0hkWC8h0mYH/bmelb5ribwulMwzFkuktXoufqzoft6Q6jLQRnkNJGRP6yA4bXqXfKYj1yeMusIPyIb3CTJT/gfZ40oli6szwu4DoFs66IZpJLv4qxU9hqu6NtJ+8QIDAQAB'
 
@@ -37,13 +35,13 @@ class BionsSocketClient {
 	private String serverSessionId
 	private String lastFeedLoginTopic
 	private String lastTradingLoginTopic
+	private int orderSequence = 0
 
 	final List<List> receivedMessages = []
 
 	void connectSocket(String host, int port, int timeoutMs = 5000) {
 		closeSocketInternal(false)
 		resetSessionState()
-
 		try {
 			socket = new Socket()
 			socket.connect(new InetSocketAddress(host, port), timeoutMs)
@@ -89,7 +87,6 @@ class BionsSocketClient {
 		if (input == null) {
 			throw new IllegalArgumentException('MD5 input tidak boleh null')
 		}
-
 		byte[] hashBytes = MessageDigest.getInstance('MD5').digest(input.getBytes('UTF-8'))
 		StringBuilder result = new StringBuilder(hashBytes.length * 2)
 		for (byte value : hashBytes) {
@@ -102,13 +99,11 @@ class BionsSocketClient {
 		if (!key) {
 			throw new IllegalStateException('RC4 session key belum tersedia')
 		}
-
 		byte[] keyBytes = key.getBytes('UTF-8')
 		int[] state = new int[256]
 		for (int index = 0; index < state.length; index++) {
 			state[index] = index
 		}
-
 		int j = 0
 		for (int index = 0; index < state.length; index++) {
 			j = (j + state[index] + (keyBytes[index % keyBytes.length] & 0xFF)) & 0xFF
@@ -116,7 +111,6 @@ class BionsSocketClient {
 			state[index] = state[j]
 			state[j] = swap
 		}
-
 		byte[] output = new byte[data.length]
 		int i = 0
 		j = 0
@@ -155,7 +149,6 @@ class BionsSocketClient {
 			inflater.setInput(data)
 			ByteArrayOutputStream output = new ByteArrayOutputStream(Math.max(data.length, 256))
 			byte[] buffer = new byte[4096]
-
 			while (!inflater.finished()) {
 				int count = inflater.inflate(buffer)
 				if (count > 0) {
@@ -190,29 +183,17 @@ class BionsSocketClient {
 		requireValue(userId, 'userId')
 		requireValue(plainPassword, 'plainPassword')
 		requireValue(sessionKeyUuid, 'sessionKeyUuid')
-
 		channelType = channel?.toUpperCase()
 		if (!(channelType in ['FEED', 'TRADING'])) {
 			failAndStop("channelType harus FEED atau TRADING, diterima: ${channel}")
 		}
-
 		rc4Key = sessionKeyUuid
 		int connectType = channelType == 'FEED' ? 2 : 1
 		String passwordValue = md5Hex(plainPassword)
 		if (channelType == 'FEED') {
 			passwordValue += '|zaisan'
 		}
-
-		List connectPayload = [
-				0,
-				userId.toUpperCase(),
-				passwordValue,
-				connectType,
-				sessionKeyUuid,
-				0,
-				2,
-		]
-
+		List connectPayload = [0, userId.toUpperCase(), passwordValue, connectType, sessionKeyUuid, 0, 2]
 		try {
 			byte[] plainBytes = JsonOutput.toJson(connectPayload).getBytes('UTF-8')
 			writeFrame(rsaEncrypt(plainBytes))
@@ -227,16 +208,13 @@ class BionsSocketClient {
 		if (frame == null) {
 			failAndStop("Tidak ada response ${channelType} Connect dalam ${timeoutMs} ms")
 		}
-
 		try {
 			byte[] decompressed = zlibDecompress(frame)
 			byte[] plainBytes = channelType == 'FEED' ? rc4(rc4Key, decompressed) : decompressed
 			List response = parseListJson(plainBytes, 'Connect response')
-
 			if (response.size() < 2 || asInt(response[0]) != 1) {
 				failAndStop("${channelType} Connect ditolak: ${safeJson(response)}")
 			}
-
 			serverSessionId = response[1]?.toString()
 			requireValue(serverSessionId, 'serverSessionId')
 			KeywordUtil.logInfo("${channelType} Connect berhasil; session ID diterima")
@@ -247,15 +225,8 @@ class BionsSocketClient {
 		}
 	}
 
-	/**
-	 * Kept only so an older test case fails clearly instead of consuming bytes.
-	 * Reading the stream here would steal the framed response from the parser.
-	 */
 	void debugRawPeek(int timeoutMs = 5000) {
-		KeywordUtil.markWarning(
-				"debugRawPeek(${timeoutMs}) dinonaktifkan karena raw read merusak frame; " +
-						'gunakan receiveConnectResponse() atau receiveMessage()',
-		)
+		KeywordUtil.markWarning("debugRawPeek(${timeoutMs}) dinonaktifkan karena raw read merusak frame; gunakan receiveConnectResponse() atau receiveMessage()")
 	}
 
 	void sendMessage(List messageArray) {
@@ -275,7 +246,6 @@ class BionsSocketClient {
 		if (frame == null || frame.length == 0) {
 			return null
 		}
-
 		try {
 			byte[] decompressed = zlibDecompress(frame)
 			byte[] plainBytes = channelType == 'FEED' ? rc4(rc4Key, decompressed) : decompressed
@@ -305,31 +275,15 @@ class BionsSocketClient {
 		return !receivedMessages.isEmpty()
 	}
 
-	void sendFeedLogin(
-			String userId,
-			String plainPassword,
-			String clientIp,
-			String appVersion,
-			String platformInfo
-	) {
+	void sendFeedLogin(String userId, String plainPassword, String clientIp, String appVersion, String platformInfo) {
 		requireChannel('FEED')
 		requireValue(clientIp, 'clientIp')
 		requireValue(appVersion, 'appVersion')
 		requireValue(platformInfo, 'platformInfo')
-
 		lastFeedLoginTopic = "jms.topic.admin.${serverSessionId}.${System.currentTimeMillis() * 1000L}"
 		String subscriptionId = "subs-${UUID.randomUUID()}"
-
 		sendMessage([4, lastFeedLoginTopic, subscriptionId])
-		List loginPayload = [
-				1,
-				serverSessionId,
-				userId,
-				plainPassword,
-				clientIp,
-				appVersion,
-				platformInfo,
-		]
+		List loginPayload = [1, serverSessionId, userId, plainPassword, clientIp, appVersion, platformInfo]
 		sendMessage([6, 'jms.queue.admin', lastFeedLoginTopic, loginPayload])
 		KeywordUtil.logInfo("Feed Login terkirim untuk user ${userId}")
 	}
@@ -343,9 +297,7 @@ class BionsSocketClient {
 				if (!result.success) {
 					failAndStop("Feed Login gagal: ${result.message}")
 				}
-				KeywordUtil.logInfo(
-						"Feed Login berhasil; gateway=${result.gatewayId}, autoRenew=${result.autoRenew}",
-				)
+				KeywordUtil.logInfo("Feed Login berhasil; gateway=${result.gatewayId}, autoRenew=${result.autoRenew}")
 				return result
 			}
 		}
@@ -364,16 +316,7 @@ class BionsSocketClient {
 		return [success: false, message: 'No valid Feed Login response']
 	}
 
-	Map loginFeed(
-			String host,
-			int port,
-			String userId,
-			String plainPassword,
-			String clientIp,
-			String appVersion = '4.17.5',
-			String platformInfo = 'Android',
-			int timeoutMs = 15000
-	) {
+	Map loginFeed(String host, int port, String userId, String plainPassword, String clientIp, String appVersion = '4.17.5', String platformInfo = 'Android', int timeoutMs = 15000) {
 		connectSocket(host, port)
 		sendConnect(userId, plainPassword, 'FEED', UUID.randomUUID().toString())
 		receiveConnectResponse(timeoutMs)
@@ -381,19 +324,9 @@ class BionsSocketClient {
 		return waitForFeedLoginResponse(timeoutMs)
 	}
 
-	static String buildTradingLoginFix(
-			String userId,
-			String plainPin,
-			String clientIp,
-			String platformInfo
-	) {
+	static String buildTradingLoginFix(String userId, String plainPin, String clientIp, String platformInfo) {
 		String separator = '\u0001'
-		String body = "35=AA${separator}" +
-				"10001=${userId}${separator}" +
-				"10002=${md5Hex(plainPin)}${separator}" +
-				"999930=${clientIp}${separator}" +
-				"58=${platformInfo}${separator}" +
-				"108=45${separator}"
+		String body = "35=AA${separator}" + "10001=${userId}${separator}" + "10002=${md5Hex(plainPin)}${separator}" + "999930=${clientIp}${separator}" + "58=${platformInfo}${separator}" + "108=45${separator}"
 		return "8=FIX.4.2${separator}9=${body.length()}${separator}${body}10=0"
 	}
 
@@ -401,11 +334,9 @@ class BionsSocketClient {
 		requireChannel('TRADING')
 		requireValue(clientIp, 'clientIp')
 		requireValue(platformInfo, 'platformInfo')
-
 		lastTradingLoginTopic = "jms.topic.trading.${serverSessionId}"
 		String subscriptionId = "subs-${UUID.randomUUID()}"
 		sendMessage([4, lastTradingLoginTopic, subscriptionId])
-
 		String fixMessage = buildTradingLoginFix(userId, plainPin, clientIp, platformInfo)
 		List loginPayload = [1, serverSessionId, userId, 'AA', fixMessage]
 		sendMessage([6, 'jms.queue.trading', lastTradingLoginTopic, loginPayload])
@@ -440,16 +371,7 @@ class BionsSocketClient {
 		return [success: false, message: 'No valid Trading Login response']
 	}
 
-	Map loginTrading(
-			String host,
-			int port,
-			String userId,
-			String plainPassword,
-			String plainPin,
-			String clientIp,
-			String platformInfo = 'Android',
-			int timeoutMs = 15000
-	) {
+	Map loginTrading(String host, int port, String userId, String plainPassword, String plainPin, String clientIp, String platformInfo = 'Android', int timeoutMs = 15000) {
 		connectSocket(host, port)
 		sendConnect(userId, plainPassword, 'TRADING', UUID.randomUUID().toString())
 		receiveConnectResponse(timeoutMs)
@@ -475,16 +397,9 @@ class BionsSocketClient {
 		if (!innerData) {
 			return null
 		}
-
 		int responseType = asInt(innerData[0])
 		if (responseType == 2) {
-			return [
-					success  : true,
-					loginId  : valueAt(innerData, 1),
-					gatewayId: valueAt(innerData, 4),
-					message  : valueAt(innerData, 6),
-					autoRenew: valueAt(innerData, 7)?.toString()?.equalsIgnoreCase('Y') ?: false,
-			]
+			return [success: true, loginId: valueAt(innerData, 1), gatewayId: valueAt(innerData, 4), message: valueAt(innerData, 6), autoRenew: valueAt(innerData, 7)?.toString()?.equalsIgnoreCase('Y') ?: false]
 		}
 		if (responseType == 3) {
 			return [success: false, message: valueAt(innerData, 2) ?: 'Unknown Feed Login failure']
@@ -500,11 +415,9 @@ class BionsSocketClient {
 		if (!innerData || innerData.size() < 5) {
 			return null
 		}
-
 		int responseType = asInt(innerData[0])
 		String fixMessage = innerData[4]?.toString()
 		String tag58Value = extractFixTag(fixMessage, '58')
-
 		if (responseType in [2, 6, 14]) {
 			return [success: true, tag58Value: tag58Value, message: tag58Value]
 		}
@@ -526,14 +439,8 @@ class BionsSocketClient {
 		if (payload.length == 0 || payload.length > MAX_FRAME_BYTES) {
 			failAndStop("Ukuran frame tidak valid: ${payload.length}")
 		}
-
 		int length = payload.length
-		byte[] prefix = [
-				(byte) ((length >>> 24) & 0xFF),
-				(byte) ((length >>> 16) & 0xFF),
-				(byte) ((length >>> 8) & 0xFF),
-				(byte) (length & 0xFF),
-		] as byte[]
+		byte[] prefix = [(byte) ((length >>> 24) & 0xFF), (byte) ((length >>> 16) & 0xFF), (byte) ((length >>> 8) & 0xFF), (byte) (length & 0xFF)] as byte[]
 		outputStream.write(prefix)
 		outputStream.write(payload)
 		outputStream.flush()
@@ -547,11 +454,7 @@ class BionsSocketClient {
 			if (prefix == null) {
 				return null
 			}
-
-			int length = ((prefix[0] & 0xFF) << 24) |
-					((prefix[1] & 0xFF) << 16) |
-					((prefix[2] & 0xFF) << 8) |
-					(prefix[3] & 0xFF)
+			int length = ((prefix[0] & 0xFF) << 24) | ((prefix[1] & 0xFF) << 16) | ((prefix[2] & 0xFF) << 8) | (prefix[3] & 0xFF)
 			if (length <= 0 || length > MAX_FRAME_BYTES) {
 				throw new IOException("Invalid frame length: ${length}")
 			}
@@ -597,12 +500,6 @@ class BionsSocketClient {
 		return values.size() > index ? values[index] : null
 	}
 
-	/**
-	 * Format angka harga saham supaya rapi seperti tampilan UI aplikasi:
-	 * - Hilangkan desimal ".0" kalau memang bilangan bulat
-	 * - Tambahkan pemisah ribuan (titik/koma sesuai locale Indonesia)
-	 * Contoh: 4880.0 -> "4.880" | 4880.5 -> "4.880,5"
-	 */
 	static String formatPrice(Object value) {
 		if (value == null || !(value instanceof Number)) {
 			return value?.toString() ?: '-'
@@ -655,37 +552,23 @@ class BionsSocketClient {
 	}
 
 	// ============================================================
-	// MARKET DATA (Stock Quote, Market Info)
-	// Sesuai dokumentasi bagian 3. Stock and Market Data.
-	// WAJIB dipanggil SETELAH Feed Login berhasil (channelType == FEED).
+	// MARKET DATA (Stock Quote, Market Info, Stock Summary)
 	// ============================================================
 
-	/**
-	 * Meminta Stock Quote snapshot (one-shot, bukan live) untuk 1 simbol saham.
-	 * Contoh: getStockQuoteSnapshot("BBNIRG") -> simbol saham + kode papan (RG/TN/NG dst).
-	 *
-	 * @param symbolWithBoard kode saham + papan digabung, misal "BBNIRG" (BBNI + papan RG)
-	 * @return List berisi row Stock Quote sesuai skema 3.5, atau null kalau tidak ada respons
-	 */
 	List getStockQuoteSnapshot(String symbolWithBoard, int timeoutMs = 5000) {
 		requireChannel('FEED')
 		requireValue(symbolWithBoard, 'symbolWithBoard')
-
 		String replyTopic = "jms.topic.${serverSessionId}.StockQuote.${System.currentTimeMillis() * 1000L}"
 		String subscriptionId = 'subs-1'
-
 		sendMessage([4, replyTopic, subscriptionId])
-
 		List queryPayload = [11, serverSessionId, 'StockQuote', 'quote', true, 0, symbolWithBoard, 0]
 		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
-
 		long deadline = System.currentTimeMillis() + timeoutMs
 		while (System.currentTimeMillis() < deadline) {
 			List message = receiveMessage(nextReadTimeout(deadline))
 			if (message == null) {
 				continue
 			}
-			// Format: [7, topic, subsId, [12, session, module, queue, singleResult, seq, page, count, [[row]]]]
 			if (message.size() >= 4 && asInt(message[0]) == 7) {
 				List innerData = message[3] instanceof List ? (List) message[3] : null
 				if (innerData != null && asInt(innerData[0]) == 12 && innerData.size() > 8) {
@@ -697,61 +580,35 @@ class BionsSocketClient {
 				}
 			}
 		}
-
 		KeywordUtil.markWarning("Tidak ada Stock Quote snapshot untuk ${symbolWithBoard} dalam ${timeoutMs} ms")
 		return null
 	}
 
-	/**
-	 * Subscribe live Stock Quote untuk 1 simbol saham. Setiap ada perubahan harga,
-	 * server akan kirim update baru ke topic yang sama ("jms.topic.quote").
-	 * Panggil unsubscribeStockQuote() setelah selesai untuk berhenti menerima update.
-	 *
-	 * @param symbolWithBoard kode saham + papan, misal "BBNIRG"
-	 */
 	void subscribeStockQuote(String symbolWithBoard, String subscriptionId = 'subs-2') {
 		requireChannel('FEED')
 		requireValue(symbolWithBoard, 'symbolWithBoard')
-
 		sendMessage([4, 'jms.topic.quote', subscriptionId, "stock='${symbolWithBoard}'".toString()])
 		KeywordUtil.logInfo("Subscribe live Stock Quote untuk ${symbolWithBoard}")
 	}
 
-	/**
-	 * Berhenti menerima live update Stock Quote yang sebelumnya di-subscribe.
-	 */
 	void unsubscribeStockQuote(String subscriptionId = 'subs-2') {
 		requireChannel('FEED')
 		sendMessage([5, 'jms.topic.quote', subscriptionId])
 		KeywordUtil.logInfo('Unsubscribe live Stock Quote')
 	}
 
-	/**
-	 * Subscribe live Stock Quote untuk BEBERAPA saham sekaligus.
-	 * Tiap simbol otomatis diberi subscriptionId unik (subs-quote-0, subs-quote-1, dst)
-	 * supaya tidak saling menimpa subscription satu sama lain.
-	 *
-	 * @param symbols List kode saham + papan, misal ["BBNIRG", "TLKMRG"]
-	 * @return Map<String symbol, String subscriptionId> - simpan ini untuk unsubscribe nanti
-	 */
 	Map<String, String> subscribeMultipleStockQuotes(List<String> symbols) {
 		requireChannel('FEED')
 		Map<String, String> subscriptionMap = [:]
-
 		symbols.eachWithIndex { symbol, index ->
 			String subId = "subs-quote-${index}"
 			subscribeStockQuote(symbol, subId)
 			subscriptionMap[symbol] = subId
 		}
-
 		KeywordUtil.logInfo("Subscribe live Stock Quote untuk ${symbols.size()} saham: ${symbols}")
 		return subscriptionMap
 	}
 
-	/**
-	 * Berhenti menerima live update untuk BEBERAPA saham sekaligus.
-	 * Gunakan Map hasil dari subscribeMultipleStockQuotes() sebagai input.
-	 */
 	void unsubscribeMultipleStockQuotes(Map<String, String> subscriptionMap) {
 		requireChannel('FEED')
 		subscriptionMap.each { symbol, subId ->
@@ -760,16 +617,8 @@ class BionsSocketClient {
 		KeywordUtil.logInfo("Unsubscribe live Stock Quote untuk ${subscriptionMap.keySet()}")
 	}
 
-	/**
-	 * Helper untuk mem-parsing SEMUA live update Stock Quote dari receivedMessages,
-	 * mengelompokkan hasilnya berdasarkan kode saham. Berguna setelah listen()
-	 * dipanggil untuk multi-simbol subscription.
-	 *
-	 * @return Map<String stockCode, List<Map> quotes> - bisa lebih dari 1 update per saham
-	 */
 	Map<String, List<Map>> parseAllLiveQuoteUpdates() {
 		Map<String, List<Map>> result = [:]
-
 		receivedMessages.each { msg ->
 			if (msg.size() >= 4 && asInt(msg[0]) == 7) {
 				List row = msg[3] instanceof List ? (List) msg[3] : null
@@ -785,147 +634,62 @@ class BionsSocketClient {
 				}
 			}
 		}
-
 		return result
 	}
 
-	/**
-	 * Mengecek dari List simbol yang di-subscribe, mana saja yang TIDAK ada
-	 * update sama sekali selama listen() - artinya harga saham itu TIDAK
-	 * bergerak (statis/flat) sepanjang durasi monitoring.
-	 *
-	 * @param subscribedSymbols List simbol asli yang di-subscribe, misal ["AMMNRG", "AALIRG"]
-	 * @param allUpdates Hasil dari parseAllLiveQuoteUpdates()
-	 * @return List simbol yang TIDAK bergerak (tidak ada di allUpdates)
-	 */
 	static List<String> getStocksWithNoMovement(List<String> subscribedSymbols, Map<String, List<Map>> allUpdates) {
 		List<String> noMovement = []
-
 		subscribedSymbols.each { symbol ->
-			// allUpdates key cuma kode saham polos (misal "AMMN"), sedangkan
-			// subscribedSymbols termasuk kode papan (misal "AMMNRG").
-			// Cocokkan dengan prefix, supaya tidak bergantung panjang kode papan.
 			boolean hasUpdate = allUpdates.keySet().any { code -> symbol.startsWith(code) }
 			if (!hasUpdate) {
 				noMovement << symbol
 			}
 		}
-
 		return noMovement
 	}
 
-	/**
-	 * Mem-parsing 1 baris Stock Quote (dari snapshot atau live update) menjadi Map
-	 * yang mudah dibaca, sesuai skema index di dokumentasi bagian 3.5.
-	 */
 	static Map parseStockQuoteRow(List row) {
 		if (row == null || row.size() < 22) {
 			return null
 		}
 		def previous = valueAt(row, 5)
 		def last = valueAt(row, 6)
-		// Kalau 'last' masih 0 (belum ada transaksi hari ini / market tutup),
-		// tampilkan 'previous' sebagai harga terakhir, sesuai perilaku UI aplikasi.
 		def displayLast = (last == 0 || last == 0.0) ? previous : last
-
-		return [
-				time         : valueAt(row, 2),
-				stockCode    : valueAt(row, 3),
-				boardCode    : valueAt(row, 4),
-				previous     : previous,
-				last         : last,
-				displayLast  : displayLast,
-				lastLot      : valueAt(row, 7),
-				open         : valueAt(row, 8),
-				high         : valueAt(row, 9),
-				low          : valueAt(row, 10),
-				change       : valueAt(row, 11),
-				changePct    : valueAt(row, 12),
-				limitHigh    : valueAt(row, 13),
-				limitLow     : valueAt(row, 14),
-				average      : valueAt(row, 15),
-				bids         : valueAt(row, 16),
-				offers       : valueAt(row, 17),
-				bestBid      : valueAt(row, 20),
-				bestOffer    : valueAt(row, 21),
-				trades       : row.size() > 24 ? valueAt(row, 24) : null,
-				bestBidVolume: row.size() > 32 ? valueAt(row, 32) : null,
-				bestOfferVolume: row.size() > 33 ? valueAt(row, 33) : null,
-		]
+		return [time: valueAt(row, 2), stockCode: valueAt(row, 3), boardCode: valueAt(row, 4), previous: previous, last: last, displayLast: displayLast, lastLot: valueAt(row, 7), open: valueAt(row, 8), high: valueAt(row, 9), low: valueAt(row, 10), change: valueAt(row, 11), changePct: valueAt(row, 12), limitHigh: valueAt(row, 13), limitLow: valueAt(row, 14), average: valueAt(row, 15), bids: valueAt(row, 16), offers: valueAt(row, 17), bestBid: valueAt(row, 20), bestOffer: valueAt(row, 21), trades: row.size() > 24 ? valueAt(row, 24) : null, bestBidVolume: row.size() > 32 ? valueAt(row, 32) : null, bestOfferVolume: row.size() > 33 ? valueAt(row, 33) : null]
 	}
 
-	/**
-	 * Mem-parsing array bid/offer mentah (dari field 'bids' atau 'offers'
-	 * hasil parseStockQuoteRow) menjadi List<Map> yang mudah dibaca.
-	 * Sesuai skema: setiap item = [price, lot, orderCount].
-	 *
-	 * @param rawLevels List mentah dari quote.bids atau quote.offers
-	 * @return List<Map> dengan key: price, lot, orderCount
-	 */
 	static List<Map> parseOrderbookLevels(Object rawLevels) {
 		List<Map> result = []
 		if (!(rawLevels instanceof List)) {
 			return result
 		}
-
 		(rawLevels as List).each { level ->
 			if (level instanceof List && level.size() >= 3) {
-				result << [
-						price     : level[0],
-						lot       : level[1],
-						orderCount: level[2],
-				]
+				result << [price: level[0], lot: level[1], orderCount: level[2]]
 			}
 		}
-
 		return result
 	}
 
-	/**
-	 * Mengambil Orderbook (multi-level Bid & Offer) untuk 1 saham,
-	 * meniru tampilan UI (Queue | Lot | Bid -- Offer | Lot | Queue).
-	 * WAJIB dipanggil setelah loginFeed() berhasil (channelType FEED).
-	 *
-	 * @param symbolWithBoard kode saham + papan, misal "BBNIRG"
-	 * @return Map berisi: stockCode, bids (List<Map>), offers (List<Map>)
-	 *         atau null kalau tidak ada respons
-	 */
 	Map getOrderbookSnapshot(String symbolWithBoard, int timeoutMs = 5000) {
 		List quoteRow = getStockQuoteSnapshot(symbolWithBoard, timeoutMs)
 		if (quoteRow == null) {
 			return null
 		}
-
 		Map quote = parseStockQuoteRow(quoteRow)
 		if (quote == null) {
 			return null
 		}
-
-		return [
-				stockCode: quote.stockCode,
-				boardCode: quote.boardCode,
-				last     : quote.displayLast,
-				bids     : parseOrderbookLevels(quote.bids),
-				offers   : parseOrderbookLevels(quote.offers),
-		]
+		return [stockCode: quote.stockCode, boardCode: quote.boardCode, last: quote.displayLast, bids: parseOrderbookLevels(quote.bids), offers: parseOrderbookLevels(quote.offers)]
 	}
 
-	/**
-	 * Meminta Market Info snapshot (indeks pasar keseluruhan, bukan per saham).
-	 *
-	 * @return Map berisi data market info sesuai skema 3.6, atau null kalau tidak ada respons
-	 */
 	Map getMarketInfoSnapshot(int timeoutMs = 5000) {
 		requireChannel('FEED')
-
 		String replyTopic = "jms.topic.${serverSessionId}.MarketInfo.${System.currentTimeMillis() * 1000L}"
 		String subscriptionId = 'subs-1'
-
 		sendMessage([4, replyTopic, subscriptionId])
-
 		List queryPayload = [11, serverSessionId, 'MarketInfo', 'marketinfo', true, 0, '', 0]
 		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
-
 		long deadline = System.currentTimeMillis() + timeoutMs
 		while (System.currentTimeMillis() < deadline) {
 			List message = receiveMessage(nextReadTimeout(deadline))
@@ -944,14 +708,10 @@ class BionsSocketClient {
 				}
 			}
 		}
-
 		KeywordUtil.markWarning("Tidak ada Market Info snapshot dalam ${timeoutMs} ms")
 		return null
 	}
 
-	/**
-	 * Mem-parsing 1 baris Market Info menjadi Map, sesuai skema index bagian 3.6.
-	 */
 	static Map parseMarketInfoRow(List row) {
 		if (row == null || row.size() < 11) {
 			return null
@@ -966,29 +726,21 @@ class BionsSocketClient {
 				frequency  : valueAt(row, 8),
 				status     : valueAt(row, 9),
 				description: valueAt(row, 10),
+				gainers    : row.size() > 11 ? valueAt(row, 11) : null,
+				losers     : row.size() > 12 ? valueAt(row, 12) : null,
+				unchanged  : row.size() > 13 ? valueAt(row, 13) : null,
+				
 		]
 	}
 
-	/**
-	 * Meminta Stock Summary snapshot untuk BEBERAPA saham sekaligus (multi-simbol).
-	 * Beda dari getStockQuoteSnapshot yang cuma 1 simbol, method ini bisa banyak
-	 * sekaligus dalam 1 request, dipisah koma sesuai spesifikasi dokumentasi.
-	 *
-	 * @param stockCodes List kode saham TANPA kode papan, misal ["BBNI", "TLKM"]
-	 * @return List of List (tiap baris = 1 saham), sesuai skema Stock Summary
-	 */
 	List<List> getStockSummarySnapshot(List<String> stockCodes, int timeoutMs = 5000) {
 		requireChannel('FEED')
 		String filter = stockCodes ? stockCodes.join(',') : ''
-
 		String replyTopic = "jms.topic.${serverSessionId}.StockSummary.${System.currentTimeMillis() * 1000L}"
 		String subscriptionId = 'subs-1'
-
 		sendMessage([4, replyTopic, subscriptionId])
-
 		List queryPayload = [11, serverSessionId, 'StockSummary', 'stocksummary', true, 0, filter, 0]
 		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
-
 		long deadline = System.currentTimeMillis() + timeoutMs
 		while (System.currentTimeMillis() < deadline) {
 			List message = receiveMessage(nextReadTimeout(deadline))
@@ -997,87 +749,43 @@ class BionsSocketClient {
 			}
 			if (message.size() >= 4 && asInt(message[0]) == 7) {
 				List innerData = message[3] instanceof List ? (List) message[3] : null
-				if (innerData != null && asInt(innerData[0]) == 12 && innerData.size() > 8) {
-					List rows = innerData[8] instanceof List ? (List) innerData[8] : []
+				if (innerData != null && asInt(innerData[0]) == 12) {
+					List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
 					KeywordUtil.logInfo("Stock Summary Snapshot (${stockCodes}): ${rows.size()} baris diterima")
 					return rows
 				}
 			}
 		}
-
 		KeywordUtil.markWarning("Tidak ada Stock Summary snapshot untuk ${stockCodes} dalam ${timeoutMs} ms")
 		return []
 	}
 
-	/**
-	 * Mem-parsing 1 baris Stock Summary menjadi Map, sesuai skema index bagian 3.5.
-	 */
 	static Map parseStockSummaryRow(List row) {
 		if (row == null || row.size() < 21) {
 			return null
 		}
-		return [
-				stockCode      : valueAt(row, 2),
-				boardCode      : valueAt(row, 3),
-				remark         : valueAt(row, 4),
-				previous       : valueAt(row, 5),
-				high           : valueAt(row, 6),
-				low            : valueAt(row, 7),
-				close          : valueAt(row, 8),
-				change         : valueAt(row, 9),
-				tradeVolume    : valueAt(row, 10),
-				tradeValue     : valueAt(row, 11),
-				tradeFrequency : valueAt(row, 12),
-				index          : valueAt(row, 13),
-				foreign        : valueAt(row, 14),
-				open           : valueAt(row, 15),
-				bestBid        : valueAt(row, 16),
-				bestBidVolume  : valueAt(row, 17),
-				bestOffer      : valueAt(row, 18),
-				bestOfferVolume: valueAt(row, 19),
-				changePct      : valueAt(row, 20),
-		]
+		return [stockCode: valueAt(row, 2), boardCode: valueAt(row, 3), remark: valueAt(row, 4), previous: valueAt(row, 5), high: valueAt(row, 6), low: valueAt(row, 7), close: valueAt(row, 8), change: valueAt(row, 9), tradeVolume: valueAt(row, 10), tradeValue: valueAt(row, 11), tradeFrequency: valueAt(row, 12), index: valueAt(row, 13), foreign: valueAt(row, 14), open: valueAt(row, 15), bestBid: valueAt(row, 16), bestBidVolume: valueAt(row, 17), bestOffer: valueAt(row, 18), bestOfferVolume: valueAt(row, 19), changePct: valueAt(row, 20)]
 	}
 
 	// ============================================================
 	// TRADING QUERY - Portfolio Stock
-	// Sesuai dokumentasi bagian 9.2. CATATAN: dokumen ini TIDAK
-	// menyediakan skema kolom response (beda dari StockQuote/Summary
-	// di bagian 3 yang punya "Row Schemas" eksplisit). Method ini
-	// cuma kirim request dan kembalikan RAW rows apa adanya - JANGAN
-	// asumsikan urutan kolom tanpa verifikasi manual ke data asli
-	// (cocokkan ke tampilan Portfolio di aplikasi, seperti yang
-	// sebelumnya kita lakukan untuk StockQuote).
 	// ============================================================
 
-	/**
-	 * Meminta Portfolio Stock snapshot untuk satu user, via Trading channel.
-	 * WAJIB dipanggil setelah Trading Login berhasil (channelType == TRADING).
-	 *
-	 * @param userId User ID pemilik portfolio, sesuai format filter PFO#<USER_ID>#%#%
-	 * @return List of List (RAW rows, kolom belum diberi nama - lihat catatan di atas)
-	 */
 	List<List> getPortfolioStockSnapshot(String userId, int timeoutMs = 5000) {
 		requireChannel('TRADING')
 		requireValue(userId, 'userId')
-
 		String replyTopic = "jms.topic.${serverSessionId}.PortfolioStock.${System.currentTimeMillis() * 1000L}"
 		String subscriptionId = 'subs-25'
 		String filter = "PFO#${userId}#%#%"
-
 		sendMessage([4, replyTopic, subscriptionId])
-
 		List queryPayload = [11, serverSessionId, 'PortfolioStock', 'portfolio', true, 0, filter, 0]
 		sendMessage([6, 'jms.queue.trading.query', replyTopic, queryPayload])
-
 		long deadline = System.currentTimeMillis() + timeoutMs
 		while (System.currentTimeMillis() < deadline) {
 			List message = receiveMessage(nextReadTimeout(deadline))
 			if (message == null) {
 				continue
 			}
-			// Format envelope diasumsikan sama seperti Feed snapshot: [7, topic, subsId, [12, ..., [[row],[row]]]]
-			// TAPI ini BELUM diverifikasi untuk channel Trading - cek log raw dulu setelah dijalankan.
 			if (message.size() >= 4 && asInt(message[0]) == 7) {
 				List innerData = message[3] instanceof List ? (List) message[3] : null
 				if (innerData != null && innerData.size() > 8) {
@@ -1085,133 +793,81 @@ class BionsSocketClient {
 					KeywordUtil.logInfo("Portfolio Stock RAW response untuk ${userId}: ${innerData}")
 					return rows
 				}
-				// Fallback: kalau struktur envelope beda dari dugaan, tetap log semuanya
 				KeywordUtil.logInfo("Portfolio Stock message diterima (struktur belum sesuai dugaan): ${message}")
 			}
 		}
-
 		KeywordUtil.markWarning("Tidak ada Portfolio Stock snapshot untuk ${userId} dalam ${timeoutMs} ms")
 		return []
 	}
 
 	// ============================================================
 	// PORTFOLIO REAL-TIME (via Trading Event Detection)
-	// Sesuai dokumentasi bagian 12: Portfolio TIDAK punya subscribe
-	// langsung. Update terjadi saat server kirim inner type 14 dengan
-	// FIX 35=8 (Execution Report), 35=9 (Order Cancel Reject), atau
-	// 35=C8 - itu sinyal untuk refresh ulang Portfolio/Order/Trade List.
 	// ============================================================
 
-	/**
-	 * Mendengarkan channel Trading selama N detik, mendeteksi setiap
-	 * trading event (inner type 14, FIX 35=8/9/C8) yang mengindikasikan
-	 * Portfolio perlu di-refresh. Setiap kali event terdeteksi, otomatis
-	 * panggil ulang getPortfolioStockSnapshot() dan simpan hasilnya.
-	 *
-	 * WAJIB dipanggil setelah loginTrading() berhasil (channelType TRADING).
-	 *
-	 * @param userId User ID untuk query ulang Portfolio
-	 * @param listenSeconds Total durasi mendengarkan event (detik)
-	 * @return List of Map, tiap Map = { trigger: FIX type, portfolio: List<List> rows }
-	 */
 	List<Map> watchPortfolioRealtime(String userId, int listenSeconds) {
 		requireChannel('TRADING')
 		requireValue(userId, 'userId')
-
 		List<Map> updates = []
 		long deadline = System.currentTimeMillis() + (listenSeconds * 1000L)
 		long lastRefresh = 0L
-		long throttleMs = 1000L  // sesuai dokumentasi: "trailing throttle satu detik"
-
+		long throttleMs = 1000L
 		KeywordUtil.logInfo("Mulai memantau Portfolio real-time selama ${listenSeconds} detik untuk user ${userId}...")
-
 		while (System.currentTimeMillis() < deadline) {
 			int timeout = (int) Math.min(deadline - System.currentTimeMillis(), 1000L)
 			if (timeout <= 0) {
 				break
 			}
-
 			List message = receiveMessage(timeout)
 			if (message == null) {
 				continue
 			}
-
 			List innerData = unwrapApplicationMessage(message)
 			if (innerData == null || innerData.size() < 5) {
 				continue
 			}
-
 			int innerType = asInt(innerData[0])
 			if (innerType != 14) {
 				continue
 			}
-
 			String fixMessage = innerData[4]?.toString()
 			String fixType = extractFixTag(fixMessage, '35')
-
 			if (!(fixType in ['8', '9', 'C8'])) {
 				continue
 			}
-
 			long now = System.currentTimeMillis()
 			if (now - lastRefresh < throttleMs) {
 				KeywordUtil.logInfo("Trading event terdeteksi (FIX 35=${fixType}), tapi masih dalam throttle window, dilewati.")
 				continue
 			}
 			lastRefresh = now
-
 			KeywordUtil.logInfo("Trading event terdeteksi (FIX 35=${fixType}), refresh Portfolio...")
 			List<List> refreshedPortfolio = getPortfolioStockSnapshot(userId, 5000)
-
 			updates << [trigger: fixType, portfolio: refreshedPortfolio, timestamp: now]
 		}
-
 		if (updates.isEmpty()) {
 			KeywordUtil.logInfo("Tidak ada trading event yang memicu refresh Portfolio selama ${listenSeconds} detik.")
 		} else {
 			KeywordUtil.logInfo("Total ${updates.size()} kali Portfolio ter-refresh akibat trading event.")
 		}
-
 		return updates
 	}
 
 	// ============================================================
 	// RUNNING TRADE (LIVE-ONLY, tidak ada snapshot query)
-	// Sesuai dokumentasi bagian 4.3 & 3.6: subscribe via topic
-	// "jms.topic.trade.live". Skema field row:
-	//   [0-1 ignored, 2 time, 3 stockCode, 4 boardCode, 5 ignored,
-	//    6 price, 7 lot, 8-11 ignored, 12 bestBid,
-	//    13-16 ignored, 17 change, 18 percentage]
 	// ============================================================
 
-	/**
-	 * Subscribe ke feed Running Trade (transaksi yang sedang terjadi,
-	 * real-time, SEMUA saham - tidak ada filter simbol/board opsional
-	 * di source code saat ini). WAJIB dipanggil setelah loginFeed() berhasil.
-	 *
-	 * @param subscriptionId ID unik untuk subscription ini
-	 */
 	void subscribeRunningTrade(String subscriptionId = 'subs-runningtrade') {
 		requireChannel('FEED')
 		sendMessage([4, 'jms.topic.trade.live', subscriptionId])
 		KeywordUtil.logInfo("Subscribe Running Trade dengan ID: ${subscriptionId}")
 	}
 
-	/**
-	 * Berhenti menerima update Running Trade.
-	 */
 	void unsubscribeRunningTrade(String subscriptionId = 'subs-runningtrade') {
 		requireChannel('FEED')
 		sendMessage([5, 'jms.topic.trade.live', subscriptionId])
 		KeywordUtil.logInfo('Unsubscribe Running Trade')
 	}
 
-	/**
-	 * Mengambil SEMUA raw message Running Trade yang sudah diterima
-	 * dari receivedMessages (setelah listen() dipanggil).
-	 *
-	 * @return List of raw envelope arrays yang berasal dari topic Running Trade
-	 */
 	List<List> getRawRunningTradeMessages() {
 		List<List> result = []
 		receivedMessages.each { msg ->
@@ -1222,53 +878,316 @@ class BionsSocketClient {
 		return result
 	}
 
-	/**
-	 * Mem-parsing SEMUA update Running Trade yang sudah diterima menjadi
-	 * List of Map yang mudah dibaca (time, stockCode, price, lot, dll),
-	 * sesuai skema resmi dokumentasi bagian 3.6.
-	 *
-	 * @return List<Map> - satu Map per transaksi yang terjadi
-	 */
 	List<Map> parseAllRunningTrades() {
 		List<Map> result = []
-
 		receivedMessages.each { msg ->
 			if (msg.size() >= 2 && msg[1]?.toString() == 'jms.topic.trade.live') {
-				// Envelope biasanya: [7, topic, subsId, [row]] - cek posisi row
 				List row = null
 				if (msg.size() >= 4 && msg[3] instanceof List) {
 					row = (List) msg[3]
 				} else if (msg.size() >= 2 && msg[1] instanceof List) {
 					row = (List) msg[1]
 				}
-
 				if (row != null && row.size() >= 19) {
-					result << [
-							time      : valueAt(row, 2),
-							stockCode : valueAt(row, 3),
-							boardCode : valueAt(row, 4),
-							price     : valueAt(row, 6),
-							lot       : valueAt(row, 7),
-							bestBid   : valueAt(row, 12),
-							change    : valueAt(row, 17),
-							percentage: valueAt(row, 18),
-					]
+					result << [time: valueAt(row, 2), stockCode: valueAt(row, 3), boardCode: valueAt(row, 4), price: valueAt(row, 6), lot: valueAt(row, 7), bestBid: valueAt(row, 12), change: valueAt(row, 17), percentage: valueAt(row, 18)]
+				}
+			}
+		}
+		return result
+	}
+
+	static List<Map> filterRunningTradesByStock(List<Map> allTrades, String stockCode) {
+		return allTrades.findAll { trade -> trade.stockCode?.toString() == stockCode }
+	}
+
+	// ============================================================
+	// PLACE ORDER (BUY/SELL)
+	// ============================================================
+
+	private String generateClOrdId(boolean isSplit = false) {
+		String paddedSession = serverSessionId.toString().padLeft(11, '0')
+		String paddedSeq = orderSequence.toString().padLeft(6, '0')
+		orderSequence++
+		String prefix = isSplit ? 'RSO' : 'R'
+		return "${prefix}${paddedSession}J${paddedSeq}"
+	}
+
+	static String buildPlaceOrderFix(String clOrdId, String stockCode, String boardCode, String userId, String investorType, String side, String transactTime, int quantityShares, String orderType, BigDecimal price, String timeInForce, String sid, String status, String accountId, String accountType, String customerId, String priority = '0', String exchangeId = 'JSX') {
+		String separator = '\u0001'
+		String body = "35=D${separator}" + "11=${clOrdId}${separator}" + "55=${stockCode}${separator}" + "65=${boardCode}${separator}" + "18= ${separator}" + "109=${userId}${separator}" + "1=${investorType}${separator}" + "21=1${separator}" + "54=${side}${separator}" + "60=${transactTime}${separator}" + "38=${quantityShares}${separator}" + "40=${orderType}${separator}" + "44=${price}${separator}" + "59=${timeInForce}${separator}" + "376=${sid}${separator}" + "39=${status}${separator}" + "10006=${accountId}${separator}" + "10061=${accountType}${separator}" + "10095=${customerId}${separator}" + "10007=${exchangeId}${separator}" + "10376=${sid}${separator}" + "10168=${priority}${separator}"
+		return "8=FIX.4.2${separator}9=${body.length()}${separator}${body}10=0"
+	}
+
+	Map placeOrder(String stockCode, String boardCode, String side, int lot, BigDecimal price, String userId, String sid = 'SID-DEMO', String accountId = 'ACC-DEMO', String customerId = 'CUST-DEMO', String accountType = 'R', String investorType = 'I', int timeoutMs = 5000) {
+		requireChannel('TRADING')
+		String clOrdId = generateClOrdId()
+		int quantityShares = lot * 100
+		String transactTime = new Date().format('HH:mm:ss')
+		String fixMessage = buildPlaceOrderFix(clOrdId, stockCode, boardCode, userId, investorType, side, transactTime, quantityShares, '1', price, '0', sid, '0', accountId, accountType, customerId)
+		String orderTopic = lastTradingLoginTopic ?: "jms.topic.trading.${serverSessionId}"
+		List orderPayload = [5, serverSessionId, userId, 'D', fixMessage]
+		sendMessage([6, 'jms.queue.trading', orderTopic, orderPayload])
+		KeywordUtil.logInfo("Place Order terkirim: ClOrdID=${clOrdId}, ${stockCode}${boardCode}, Side=${side == '1' ? 'BUY' : 'SELL'}, Lot=${lot} (${quantityShares} lembar), Price=${price}")
+		return waitForPlaceOrderResponse(clOrdId, timeoutMs)
+	}
+
+	private Map waitForPlaceOrderResponse(String clOrdId, int timeoutMs) {
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			Map result = parsePlaceOrderMessage(message)
+			if (result != null) {
+				if (result.success) {
+					KeywordUtil.logInfo("✅ Order diterima (non-rejection). ClOrdID=${clOrdId}, Tag35=${result.tag35}, Tag39=${result.tag39}")
+				} else {
+					KeywordUtil.logInfo("❌ Order DITOLAK. ClOrdID=${clOrdId}, Alasan (tag58)=${result.tag58 ?: '-'}")
+				}
+				return result
+			}
+		}
+		KeywordUtil.logInfo("⚠️ Timeout menunggu response order setelah ${timeoutMs}ms. PERINGATAN: order mungkin TETAP TERKIRIM ke server meski response tidak diterima. Cek manual status order via getBasicOrderList() sebelum coba kirim ulang.")
+		return [success: false, timeout: true, clOrdId: clOrdId, message: 'Timeout - status order tidak pasti']
+	}
+
+	private Map parsePlaceOrderMessage(List message) {
+		List innerData = unwrapApplicationMessage(message)
+		if (!innerData || innerData.size() < 5) {
+			return null
+		}
+		int msgTypeIndicator = asInt(innerData[0])
+		if (msgTypeIndicator != 14) {
+			return null
+		}
+		String typeMarker = innerData[3]?.toString()
+		if (typeMarker == 'C0') {
+			KeywordUtil.logInfo("ℹ️ Mengabaikan pesan status global (C0), bukan response order: ${innerData}")
+			return null
+		}
+		String fixResponse = innerData[4]?.toString()
+		if (!fixResponse) {
+			return null
+		}
+		String tag35 = extractFixTag(fixResponse, '35')
+		String tag39 = extractFixTag(fixResponse, '39')
+		String tag150 = extractFixTag(fixResponse, '150')
+		String tag58 = extractFixTag(fixResponse, '58')
+		boolean isRejected = (tag35 == '9') || (tag39 == '8') || (tag150 == '8') || (tag58 != null && !tag58.trim().isEmpty())
+		return [success: !isRejected, tag35: tag35, tag39: tag39, tag150: tag150, tag58: tag58, rawFix: fixResponse]
+	}
+
+	List<Map> getBasicOrderList(String userId) {
+		requireChannel('TRADING')
+		String replyTopic = "jms.topic.${serverSessionId}.StockOrderList.Basic.${System.currentTimeMillis()}${(Math.random() * 999).toInteger()}"
+		String subscriptionId = "subs-${UUID.randomUUID()}"
+		List queryPayload = [11, serverSessionId, 'StockOrderList.Basic', 'order', true, 0, "ORD#${userId}#%#%", 0]
+		sendMessage([4, replyTopic, subscriptionId])
+		sendMessage([6, 'jms.queue.trading.query', replyTopic, queryPayload])
+		long deadline = System.currentTimeMillis() + 10000
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			List innerData = unwrapApplicationMessage(message)
+			if (innerData != null && asInt(innerData[0]) == 12) {
+				List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
+				KeywordUtil.logInfo("Basic Order List diterima: ${rows.size()} order")
+				return rows
+			}
+		}
+		KeywordUtil.logInfo('⚠️ Timeout menunggu Basic Order List')
+		return []
+	}
+
+	// ============================================================
+	// CUSTOMER & ACCOUNT QUERY
+	// ============================================================
+
+	List<List> getCustomerInfo(String userId, int timeoutMs = 10000) {
+		requireChannel('TRADING')
+		requireValue(userId, 'userId')
+		String replyTopic = "jms.topic.${serverSessionId}.CustomerInfo.${System.currentTimeMillis()}${(Math.random() * 999).toInteger()}"
+		String subscriptionId = "subs-${UUID.randomUUID()}"
+		String filter = "CI#${userId}#%#%"
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'CustomerInfo', 'account', true, 0, filter, 0]
+		sendMessage([6, 'jms.queue.trading.query', replyTopic, queryPayload])
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			List innerData = unwrapApplicationMessage(message)
+			if (innerData != null && asInt(innerData[0]) == 12) {
+				List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
+				KeywordUtil.logInfo("=== CUSTOMER INFO RAW untuk ${userId} ===")
+				rows.eachWithIndex { row, idx -> KeywordUtil.logInfo("Row ${idx}: ${row}") }
+				return rows
+			}
+		}
+		KeywordUtil.logInfo('⚠️ Timeout menunggu Customer Info')
+		return []
+	}
+
+	List<List> getAccountList(String userId, int timeoutMs = 10000) {
+		requireChannel('TRADING')
+		requireValue(userId, 'userId')
+		String replyTopic = "jms.topic.${serverSessionId}.Account.${System.currentTimeMillis()}${(Math.random() * 999).toInteger()}"
+		String subscriptionId = "subs-${UUID.randomUUID()}"
+		String filter = "ACC#${userId}#%#%"
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'Account', 'account', true, 0, filter, 0]
+		sendMessage([6, 'jms.queue.trading.query', replyTopic, queryPayload])
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			List innerData = unwrapApplicationMessage(message)
+			if (innerData != null && asInt(innerData[0]) == 12) {
+				List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
+				KeywordUtil.logInfo("=== ACCOUNT LIST RAW untuk ${userId} ===")
+				rows.eachWithIndex { row, idx -> KeywordUtil.logInfo("Row ${idx}: ${row}") }
+				return rows
+			}
+		}
+		KeywordUtil.logInfo('⚠️ Timeout menunggu Account List')
+		return []
+	}
+
+	// ============================================================
+	// STOCK MASTER (Daftar Semua Saham)
+	// ============================================================
+
+	List<List> getStockMaster(int timeoutMs = 15000) {
+		requireChannel('FEED')
+		String replyTopic = "jms.topic.${serverSessionId}.Stock.${System.currentTimeMillis() * 1000L}"
+		String subscriptionId = 'subs-stockmaster'
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'Stock', 'stock', true, 0, '', 0]
+		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			if (message == null) {
+				continue
+			}
+			if (message.size() >= 4 && asInt(message[0]) == 7) {
+				List innerData = message[3] instanceof List ? (List) message[3] : null
+				if (innerData != null && asInt(innerData[0]) == 12 && innerData.size() > 8) {
+					List rows = innerData[8] instanceof List ? (List) innerData[8] : []
+					KeywordUtil.logInfo("Stock Master diterima: ${rows.size()} saham")
+					return rows
+				}
+			}
+		}
+		KeywordUtil.markWarning("Tidak ada Stock Master response dalam ${timeoutMs} ms")
+		return []
+	}
+
+	static Map parseStockMasterRow(List row) {
+		if (row == null || row.size() < 13) {
+			return null
+		}
+		return [code: valueAt(row, 2), name: valueAt(row, 3), status: valueAt(row, 4), stockType: valueAt(row, 5), subSectorCode: valueAt(row, 6), ipoPrice: valueAt(row, 7), basePrice: valueAt(row, 8), listedShares: valueAt(row, 9), tradableShares: valueAt(row, 10), lotSize: valueAt(row, 11), corpActionCode: valueAt(row, 12), marginable: row.size() > 13 ? valueAt(row, 13) : null, main: row.size() > 17 ? valueAt(row, 17) : null]
+	}
+
+	// ============================================================
+	// CORPORATE ACTION
+	// Sesuai dokumentasi bagian 8.1 & 8.2.
+	// Destination: jms.queue.query | Module: CorporateActionView |
+	// Logical queue: CorporateAction | Filter: CA#%#<UPPERCASE_STOCK>%
+	// ============================================================
+
+	List<List> getCorporateAction(String stockCode, int timeoutMs = 10000) {
+		requireChannel('FEED')
+		requireValue(stockCode, 'stockCode')
+		String upperStock = stockCode.toUpperCase()
+		String replyTopic = "jms.topic.${serverSessionId}.CorporateAction.${System.currentTimeMillis()}${(Math.random() * 999).toInteger()}"
+		String subscriptionId = "subs-${UUID.randomUUID()}"
+		String filter = "CA#%#${upperStock}%"
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'CorporateActionView', 'CorporateAction', true, 0, filter, 0]
+		sendMessage([6, 'jms.queue.query', replyTopic, queryPayload])
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			if (message == null) {
+				continue
+			}
+			if (message.size() >= 4 && asInt(message[0]) == 7) {
+				List innerData = message[3] instanceof List ? (List) message[3] : null
+				if (innerData != null && asInt(innerData[0]) == 12) {
+					List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
+					KeywordUtil.logInfo("Corporate Action untuk ${upperStock}: ${rows.size()} baris diterima")
+					return rows
+				}
+			}
+		}
+		KeywordUtil.markWarning("Tidak ada Corporate Action response untuk ${upperStock} dalam ${timeoutMs} ms")
+		return []
+	}
+
+	static String corporateActionTypeName(String typeCode) {
+		Map<String, String> typeNames = ['A': 'IPO', 'B': 'RUPS', 'C': 'Right Issue', 'D': 'Warrant', 'E': 'Stock Split', 'F': 'Reverse Stock', 'G': 'Cash Dividend', 'H': 'Stock Dividend', 'I': 'Bonus', 'J': 'Merger', 'K': 'Tender Offer']
+		return typeNames[typeCode] ?: "Tidak diketahui (${typeCode})"
+	}
+
+	static Map parseCorporateActionRow(List row) {
+		if (row == null || row.size() < 11) {
+			return null
+		}
+		String typeCode = valueAt(row, 0)?.toString()
+		return [typeCode: typeCode, typeName: corporateActionTypeName(typeCode), stockCode: valueAt(row, 1), stockName: valueAt(row, 2), stockDate: valueAt(row, 3), stockTime: valueAt(row, 4), amount: valueAt(row, 5), place: valueAt(row, 6), agenda: valueAt(row, 7), ratioOld: valueAt(row, 8), ratioNew: valueAt(row, 9), price: valueAt(row, 10), cumDateRgNg: row.size() > 11 ? valueAt(row, 11) : null, exDateRgNg: row.size() > 13 ? valueAt(row, 13) : null, recordDate: row.size() > 15 ? valueAt(row, 15) : null, paymentDate: row.size() > 16 ? valueAt(row, 16) : null]
+	}
+
+	// ============================================================
+	// MARKET INDICES (daftar semua indeks pasar)
+	// ============================================================
+
+	List<List> getAllMarketIndices(int timeoutMs = 10000) {
+		requireChannel('FEED')
+
+		String replyTopic = 'jms.topic.' + serverSessionId + '.MarketInfoAll.' + System.currentTimeMillis()
+		String subscriptionId = 'subs-indices'
+
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'MarketInfo', 'marketinfo', true, 0, '', 0]
+		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
+
+		long deadline = System.currentTimeMillis() + timeoutMs
+		while (System.currentTimeMillis() < deadline) {
+			List message = receiveMessage(nextReadTimeout(deadline))
+			if (message == null) {
+				continue
+			}
+			if (message.size() >= 4 && asInt(message[0]) == 7) {
+				List innerData = message[3] instanceof List ? (List) message[3] : null
+				if (innerData != null && asInt(innerData[0]) == 12) {
+					List rows = (innerData.size() > 8 && innerData[8] instanceof List) ? (List) innerData[8] : []
+					KeywordUtil.logInfo('Market Indices diterima: ' + rows.size() + ' indeks')
+					return rows
 				}
 			}
 		}
 
-		return result
+		KeywordUtil.markWarning('Tidak ada Market Indices response dalam ' + timeoutMs + ' ms')
+		return []
 	}
 
 	/**
-	 * Filter hasil parseAllRunningTrades() untuk 1 kode saham tertentu.
-	 * Berguna karena subscribe Running Trade menerima SEMUA saham sekaligus
-	 * (tidak ada filter simbol di level subscribe).
-	 *
-	 * @param allTrades Hasil dari parseAllRunningTrades()
-	 * @param stockCode Kode saham polos, misal "BBCA" (tanpa kode papan)
+	 * DEBUG - uji query MarketInfo dengan filter kode spesifik (misal 'ABX'),
+	 * untuk cek apakah modul ini bisa di-query per-indeks seperti StockQuote.
 	 */
-	static List<Map> filterRunningTradesByStock(List<Map> allTrades, String stockCode) {
-		return allTrades.findAll { trade -> trade.stockCode?.toString() == stockCode }
+	void debugMarketInfoWithFilter(String indexCode) {
+		requireChannel('FEED')
+
+		String replyTopic = 'jms.topic.' + serverSessionId + '.MarketInfoFilter.' + System.currentTimeMillis()
+		String subscriptionId = 'subs-marketinfo-filter'
+
+		sendMessage([4, replyTopic, subscriptionId])
+		List queryPayload = [11, serverSessionId, 'MarketInfo', 'marketinfo', true, 0, indexCode, 0]
+		sendMessage([6, 'jms.queue.snapshot', replyTopic, queryPayload])
+
+		for (int i = 0; i < 5; i++) {
+			List msg = receiveMessage(3000)
+			if (msg != null) {
+				KeywordUtil.logInfo('Response untuk filter "' + indexCode + '": ' + msg)
+			}
+		}
 	}
+
 }

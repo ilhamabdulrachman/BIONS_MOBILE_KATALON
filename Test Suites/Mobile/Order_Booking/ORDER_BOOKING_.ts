@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSuiteEntity>
    <description></description>
-   <name>LOGIN_Telkomsel</name>
+   <name>ORDER_BOOKING_</name>
    <tag></tag>
    <isRerun>false</isRerun>
    <mailRecipient></mailRecipient>
    <maxConcurrentInstances>1</maxConcurrentInstances>
-   <numberOfRerun>3</numberOfRerun>
+   <numberOfRerun>0</numberOfRerun>
    <orchestration>CLASSIC</orchestration>
-   <pageLoadTimeout>10</pageLoadTimeout>
+   <pageLoadTimeout>30</pageLoadTimeout>
    <pageLoadTimeoutDefault>true</pageLoadTimeoutDefault>
    <rerunFailedTestCasesOnly>false</rerunFailedTestCasesOnly>
-   <rerunImmediately>true</rerunImmediately>
-   <testSuiteGuid>45e54f60-504d-4a1a-a199-a95c4e7e003f</testSuiteGuid>
+   <rerunImmediately>false</rerunImmediately>
+   <testSuiteGuid>68da92e6-4de6-4e6e-979c-ecd3346999e8</testSuiteGuid>
    <testCaseLink>
-      <guid>916015b3-aa45-465c-9566-408b7d09463f</guid>
+      <guid>bdb1cf57-c923-483e-b5b8-fa3b53d90c49</guid>
       <isReuseDriver>false</isReuseDriver>
       <isRun>true</isRun>
-      <testCaseId>Test Cases/MOBILE_v2/Login_/Login_Prod</testCaseId>
-      <usingDataBindingAtTestSuiteLevel>false</usingDataBindingAtTestSuiteLevel>
+      <testCaseId>Test Cases/MOBILE/Transaksi/Transaksi_Reguler/BUY_ORDER_BOOKING</testCaseId>
+      <usingDataBindingAtTestSuiteLevel>true</usingDataBindingAtTestSuiteLevel>
    </testCaseLink>
 </TestSuiteEntity>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>1.  scenario nya cek 100 saham yg ada di stocklist dari total 3019 saham,
+2. apakah dari 100 saham ini realtime? jika tidak di tampilkan yg mana yg gak realtime</description>
+   <name>Stock_List</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>1456d158-bc97-49a9-a8eb-171cd47dd7b1</testCaseGuid>
+</TestCaseEntity>
